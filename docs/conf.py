@@ -20,11 +20,18 @@ import sys, os
 
 cwd = os.getcwd()
 parent = os.path.dirname(cwd)
+quartet_epcis_path = os.path.join(cwd, '..')
 sys.path.append(parent)
+print(sys.path)
+sys.path.append(os.path.join(cwd, '../tests'))
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from recommonmark.parser import CommonMarkParser
 import quartet_capture
 import sphinx_rtd_theme
+import django
+django.setup()
 
 # -- General configuration -----------------------------------------------------
 
@@ -41,7 +48,7 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'

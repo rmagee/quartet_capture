@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -12,16 +11,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Copyright 2018 SerialLab Corp.  All rights reserved.
+# Copyright 2018 SerialLab LLC.  All rights reserved.
+from django.conf import settings
 
-from __future__ import unicode_literals, absolute_import
+QUARTET_CAPTURE_BROKER = getattr(settings, 'QUARTET_CAPTURE_BROKER',
+                                 'pyamqp://guest@localhost//')
 
-from django.conf.urls import url, include
-
-from quartet_capture.urls import urlpatterns as quartet_capture_urls
-
-app_name = 'quartet_capture'
-
-urlpatterns = [
-    url(r'^', include(quartet_capture_urls)),
-]

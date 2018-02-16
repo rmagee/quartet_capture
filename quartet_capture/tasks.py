@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -14,14 +13,14 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
-from __future__ import unicode_literals, absolute_import
+from celery import shared_task
 
-from django.conf.urls import url, include
+@shared_task()
+def handle_message(message_data, rule):
+    '''
+    When a message arrives, creates a record of the message and parses
+    it using the appropriate parser.
+    :param message_data: The data to be handled.
+    '''
 
-from quartet_capture.urls import urlpatterns as quartet_capture_urls
 
-app_name = 'quartet_capture'
-
-urlpatterns = [
-    url(r'^', include(quartet_capture_urls)),
-]

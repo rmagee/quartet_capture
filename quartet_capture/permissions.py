@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -12,16 +11,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Copyright 2018 SerialLab Corp.  All rights reserved.
+# Copyright 2018 SerialLab LLC.  All rights reserved.
 
-from __future__ import unicode_literals, absolute_import
+from rest_framework import permissions
 
-from django.conf.urls import url, include
+class CaptureInterfacePermission(permissions.BasePermission):
+    message = 'Capture interface access not allowed.'
 
-from quartet_capture.urls import urlpatterns as quartet_capture_urls
-
-app_name = 'quartet_capture'
-
-urlpatterns = [
-    url(r'^', include(quartet_capture_urls)),
-]
+    def has_permission(self, request, view):
+        pass

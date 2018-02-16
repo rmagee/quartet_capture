@@ -1,2 +1,3 @@
 django-model-utils>=2.0
+celery
 # Additional requirements go here

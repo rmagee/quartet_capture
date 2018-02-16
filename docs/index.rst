@@ -3,17 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to quartet_capture's documentation!
+QU4RTET Capture Documentation
 =================================================================
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   readme
-   installation
-   usage
-   contributing
-   authors
-   history
+    installation
+    usage
+    contributing
+    authors
+    history
+    rules
+    settings

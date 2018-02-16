@@ -1,5 +1,4 @@
-QU4TET CAPTURE
-==============
+# QU4TET CAPTURE
 
 [![pipeline status](https://gitlab.com/serial-lab/quartet_capture/badges/master/pipeline.svg)](https://gitlab.com/serial-lab/quartet_capture/commits/master)
 [![coverage report](https://gitlab.com/serial-lab/quartet_capture/badges/master/coverage.svg)](https://gitlab.com/serial-lab/quartet_capture/commits/master)

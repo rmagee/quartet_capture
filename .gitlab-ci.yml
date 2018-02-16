@@ -1,4 +1,4 @@
-stages:
+  stages:
     - test-python
     - build-docs
 
