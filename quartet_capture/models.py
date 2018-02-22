@@ -42,6 +42,7 @@ class Field(models.Model):
 
     class Meta:
         abstract = True
+        app_label = 'quartet_capture'
 
 
 class Rule(models.Model):
@@ -51,9 +52,10 @@ class Rule(models.Model):
     name = models.CharField(
         max_length=100,
         null=False,
-        help_text=_('A rule is composed of multiple steps that execute in'
+        help_text=_('A rule is composed of multiple steps that execute in '
                     'order.'),
-        verbose_name=_('Rule')
+        verbose_name=_('Rule'),
+        unique=True
     )
     description = models.CharField(
         max_length=500,
@@ -61,7 +63,9 @@ class Rule(models.Model):
         help_text=_('A short description.'),
         verbose_name=_('Description')
     )
-
+    class Meta:
+        verbose_name=_('Rule')
+        app_label = 'quartet_capture'
 
 class RuleParameter(Field):
     '''
@@ -77,6 +81,10 @@ class RuleParameter(Field):
         verbose_name=_('Rule Field')
     )
 
+    class Meta:
+        verbose_name=_('Rule Parameter')
+        unique_together = ('name', 'rule')
+        app_label = 'quartet_capture'
 
 class Step(models.Model):
     '''
@@ -119,6 +127,10 @@ class Step(models.Model):
         help_text=_('The parent rule.'),
         verbose_name=_('Rule')
     )
+    class Meta:
+        verbose_name=_('Step')
+        unique_together = ('name', 'rule')
+        app_label = 'quartet_capture'
 
 class StepParameter(Field):
     '''
@@ -133,3 +145,7 @@ class StepParameter(Field):
                     ' as variables.'),
         verbose_name=_('Step Field')
     )
+    class Meta:
+        verbose_name=_('Step Parameter')
+        unique_together = ('name', 'step')
+        app_label = 'quartet_capture'

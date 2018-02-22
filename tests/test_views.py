@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -14,34 +12,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
-
-"""
-test_quartet_capture
-------------
-
-Tests for `quartet_capture` models module.
-"""
 import os
-from django.test import TestCase
-
+from rest_framework.test import APITestCase
+from django.urls import reverse
 from quartet_capture import models
-from quartet_capture import rules
 
 
-class TestQuartet_capture(TestCase):
+class ViewTest(APITestCase):
+    '''
+    Tests the capture API and executes the rule framework.
+    '''
 
-    def setUp(self):
-        pass
+    def test_data(self):
+        self._create_rule()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        self.client.post('{0}?rule=epcis'.format(url), {'file': data},
+                         format='multipart')
 
-    def test_epcis_rule(self):
-        # create a new rule and give it a test parameter
-        db_rule = self._create_rule()
-        # load some XML into memory
-        data = self.load_test_data()
-        # declare a rule class
-        rule = rules.Rule(db_rule)
-        # execute the rule
-        rule.execute(data)
+    def _get_test_data(self):
+        '''
+        Loads the XML file and passes its data back as a string.
+        '''
+        curpath = os.path.dirname(__file__)
+        data_path = os.path.join(curpath, 'data/epcis.xml')
+        with open(data_path) as data_file:
+            return data_file.read()
 
     def _create_rule(self):
         db_rule = models.Rule()
@@ -60,11 +56,3 @@ class TestQuartet_capture(TestCase):
         epcis_step.rule = db_rule
         epcis_step.save()
         return db_rule
-
-    def load_test_data(self):
-        curpath = os.path.dirname(__file__)
-        f = open(os.path.join(curpath, 'data/epcis.xml'))
-        return f.read().encode()
-
-    def tearDown(self):
-        pass

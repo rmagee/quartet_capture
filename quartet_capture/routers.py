@@ -12,3 +12,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
+from rest_framework.routers import DefaultRouter
+from quartet_capture import viewsets
+
+router = DefaultRouter()
+router.register(r'rules', viewsets.RuleViewSet, base_name='rules')
+router.register(r'rule-parameters', viewsets.RuleParameterViewSet,
+                base_name='rule-parameters')
+router.register(r'steps', viewsets.StepViewSet, base_name='steps')
+router.register(r'step-parameters', viewsets.StepParameterViewSet,
+                base_name='step-parameters')
+urlpatterns = router.urls

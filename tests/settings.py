@@ -18,6 +18,7 @@ from __future__ import unicode_literals, absolute_import
 
 import django
 
+
 DEBUG = True
 USE_TZ = True
 
@@ -30,7 +31,6 @@ DATABASES = {
         "NAME": ":memory:",
     }
 }
-
 ROOT_URLCONF = "tests.urls"
 
 INSTALLED_APPS = [
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sites",
     "quartet_epcis",
-    "quartet_capture",
+    "quartet_capture.apps.QuartetCaptureConfig",
 ]
 
 SITE_ID = 1
@@ -47,3 +47,10 @@ if django.VERSION >= (1, 10):
     MIDDLEWARE = ()
 else:
     MIDDLEWARE_CLASSES = ()
+
+
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[logging.StreamHandler()]
+)

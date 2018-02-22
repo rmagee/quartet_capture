@@ -16,10 +16,15 @@
 
 from django.conf.urls import url
 from . import views
+from quartet_capture.routers import urlpatterns as route_patterns
 
 app_name = 'quartet_capture'
 
+# the capture URL is versioned at v1
 urlpatterns = [
-    url(r'^quartet-capture/$', views.CaptureInterface.as_view(),
-        name='quartet-manifest'),
+    url(r'^quartet-capture/$',
+        views.CaptureInterface.as_view(),
+        name='quartet-capture'),
 ]
+
+urlpatterns += route_patterns
