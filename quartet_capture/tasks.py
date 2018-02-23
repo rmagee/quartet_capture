@@ -20,7 +20,7 @@ from quartet_capture.rules import Rule
 
 logger = getLogger('quartet_capture')
 
-@shared_task()
+@shared_task(name='execute_rule')
 def execute_rule(message: str, rule_name: str):
     '''
     When a message arrives, creates a record of the message and parses

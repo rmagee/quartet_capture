@@ -26,18 +26,30 @@ import logging
 
 logger = logging.getLogger('quartet_capture')
 
+
 class CaptureInterface(APIView):
     '''
     The view responsible for capturing the files and handing
     off the queuing to a celery task.
+
+    This view loads the full request onto the celery broker, so you may
+    want to set some upload/size limits on inbound messages to avoid
+    any type of memory issues under heavy load.  The messages are only
+    briefly in memory but it can be an issue.
+
+    When configuring the REST_FRAMEWORK attributes, use the
+    DEFAULT_THROTTLE_CLASS of 'rest_framework.throttling.ScopedRateThrottle'
+    and configure your upload throttle using the scope `capture_upload`.
     '''
     # set the parser to handle HTTP post / upload
     parser_classes = (MultiPartParser,)
+    # this is the throttle scope for this view
+    throttle_scope = 'capture_upload'
 
     def post(self, request: Request, format=None):
         logger.info('Message from %s', getattr(request.META, 'REMOTE_HOST',
                                                'Host Info not Available'))
-        #get the rule from the query parameter
+        # get the rule from the query parameter
         rule_name = request.query_params.get('rule', None)
         if not rule_name:
             raise exceptions.APIException(
@@ -59,5 +71,7 @@ class CaptureInterface(APIView):
             )
         # execute the rule as a task in celery
         logger.debug('Executing rule %s', rule_name)
-        execute_rule(message=message, rule_name=rule_name)
+        # read the data
+        data = message.read()
+        execute_rule.delay(message=data, rule_name=rule_name)
         return Response('Message was queued.')
