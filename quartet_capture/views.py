@@ -21,6 +21,7 @@ from rest_framework import status
 from rest_framework import exceptions
 
 from quartet_capture.tasks import execute_rule
+from quartet_capture.models import Rule
 
 import logging
 
@@ -73,5 +74,15 @@ class CaptureInterface(APIView):
         logger.debug('Executing rule %s', rule_name)
         # read the data
         data = message.read()
-        execute_rule.delay(message=data, rule_name=rule_name)
+        execute_rule.delay(message=data,
+                           rule_name=self._rule_exists(rule_name))
         return Response('Message was queued.')
+
+    def _rule_exists(self, rule_name):
+        '''
+        Looks up the rule and throws a DoesNotExist exception if it can not
+        be found.  Will prevent the potential queueing of large messages
+        that don't have a rule to process them with.
+        '''
+        Rule.objects.get(name=rule_name)
+        return rule_name
