@@ -78,7 +78,7 @@ class Rule:
             raise Rule.StepNotFound('The step %s could not be loaded. '
                                     'make sure it and '
                                     'any dependencies are on the PYTHONPATH '
-                                    'and can be loaded.')
+                                    'and can be loaded.', db_step.step_class)
         params = {p.name: p.value
                   for p in db_step.stepparameter_set.all()}
         return step(params)
