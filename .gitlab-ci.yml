@@ -8,11 +8,6 @@ before_script:
   - mkdir -p ~/.ssh
   - ssh-add <(echo "$SERIALBOX_SSH_KEY") 2>/dev/null
   - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-
-python3_5_unit_test:
-  image: seriallab/python3.5dev
-  stage: test-python
-  script:
   - apt-get install -y git
   - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
   - git clone git@gitlab.com:serial-lab/EPCPyYes.git ./EPCPyYes
@@ -22,6 +17,11 @@ python3_5_unit_test:
   - git clone git@gitlab.com:serial-lab/quartet_epcis.git ./quartet_epcis
   - pip install -e ./quartet_epcis
   - pip install -r requirements_test.txt
+
+python3_5_unit_test:
+  image: seriallab/python3.5dev
+  stage: test-python
+  script:
   - coverage run runtests.py
   - coverage report -m
   - coverage html
@@ -33,15 +33,6 @@ python3_6_unit_test:
   image: seriallab/python3.6dev
   stage: test-python
   script:
-  - apt-get install -y git
-  - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
-  - git clone git@gitlab.com:serial-lab/EPCPyYes.git ./EPCPyYes
-  - pip install -e ./EPCPyYes
-  - git clone git@gitlab.com:serial-lab/EParseCIS.git ./EParseCIS
-  - pip install -e ./EParseCIS
-  - git clone git@gitlab.com:serial-lab/quartet_epcis.git ./quartet_epcis
-  - pip install -e ./quartet_epcis
-  - pip install -r requirements_test.txt
   - coverage run runtests.py
   - coverage report -m
   - coverage html
