@@ -1,6 +1,6 @@
-  stages:
-    - test-python
-    - build-docs
+stages:
+   - test-python
+   - build-docs
 
 python3_5_unit_test:
   image: seriallab/python3.5dev
