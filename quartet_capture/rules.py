@@ -14,11 +14,13 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
 import logging
+import importlib
 from abc import ABCMeta, abstractmethod, abstractproperty
 from quartet_capture import models
 from pydoc import locate
 
 logger = logging.getLogger('quartet_capture')
+
 
 class Rule:
     '''
@@ -47,9 +49,17 @@ class Rule:
         '''
         Implement this to handle inbound messaging and to
         do any pre-rule execution handling.
+
+        Raises a Rule.StepsNotConfigured exception if no steps were configured.
+
         :param data: The data to be handled by each of the steps in the
         rule.
         '''
+        if len(self.steps) == 0:
+            raise self.StepsNotConfigured(
+                'The rule %s was loaded with no '
+                'steps configured.' % self.db_rule.name
+            )
         for number, step in self.steps.items():
             logger.debug('Executing step %s.', number)
             data = step.execute(data, self.context)
@@ -75,13 +85,28 @@ class Rule:
         '''
         step = locate(db_step.step_class)
         if not step:
-            raise Rule.StepNotFound('The step %s could not be loaded. '
-                                    'make sure it and '
-                                    'any dependencies are on the PYTHONPATH '
-                                    'and can be loaded.', db_step.step_class)
+            step = self._step_import(db_step.step_class)
+            if not step:
+                raise Rule.StepNotFound(
+                    'The step %s could not be loaded. '
+                    'make sure it and '
+                    'any dependencies are on the PYTHONPATH '
+                    'and can be loaded.', db_step.step_class
+                )
         params = {p.name: p.value
                   for p in db_step.stepparameter_set.all()}
         return step(params)
+
+    def _step_import(self, step_name: str):
+        '''
+        Called if _load_step fails as a backup.
+        :return: A Step instance.
+        '''
+        components = step_name.rsplit('.', 1)
+        logger.debug('components = %s', components)
+        module = importlib.import_module(components[0])
+        step = getattr(module, components[1])
+        return step
 
     @abstractmethod
     def on_success(self, data, context: dict):
@@ -103,6 +128,13 @@ class Rule:
         rule_fiels = self.db_rule.field_s
 
     class StepNotFound(Exception):
+        '''
+        If a step can not be loaded into memory, this will be raised
+        by the Rule during initialization.
+        '''
+        pass
+
+    class StepsNotConfigured(Exception):
         '''
         If a step can not be loaded into memory, this will be raised
         by the Rule during initialization.
