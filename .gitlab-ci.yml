@@ -15,6 +15,9 @@ python3_5_unit_test:
   script:
   - apt-get install -y git
   - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
+  - git clone git@gitlab.com:serial-lab/EPCPyYes.git ./EPCPyYes
+  - git clone git@gitlab.com:serial-lab/EParseCIS.git ./EParseCIS
+  - git clone git@gitlab.com:serial-lab/quartet_epcis.git ./quartet_epcis
   - pip install -r requirements_test.txt
   - coverage run runtests.py
   - coverage report -m
@@ -29,6 +32,9 @@ python3_6_unit_test:
   script:
   - apt-get install -y git
   - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
+  - git clone git@gitlab.com:serial-lab/EPCPyYes.git ./EPCPyYes
+  - git clone git@gitlab.com:serial-lab/EParseCIS.git ./EParseCIS
+  - git clone git@gitlab.com:serial-lab/quartet_epcis.git ./quartet_epcis
   - pip install -r requirements_test.txt
   - coverage run runtests.py
   - coverage report -m

@@ -11,7 +11,3 @@ celery
 django
 djangorestframework
 lxml
-
--e git://gitlab.com/serial-lab/EPCPyYes.git#egg=epcpyyes
--e git://gitlab.com/serial-lab/EParseCIS.git#egg=eparsecis
--e git://gitlab.com/serial-lab/quartet_epcis.git#egg=quartet_epcis
