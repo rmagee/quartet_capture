@@ -44,15 +44,6 @@ pages:
     image: seriallab/python3.5dev
     stage: build-docs
     script:
-    - apt-get install -y git
-    - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
-    - git clone git@gitlab.com:serial-lab/EPCPyYes.git ./EPCPyYes
-    - pip install -e ./EPCPyYes
-    - git clone git@gitlab.com:serial-lab/EParseCIS.git ./EParseCIS
-    - pip install -e ./EParseCIS
-    - git clone git@gitlab.com:serial-lab/quartet_epcis.git ./quartet_epcis
-    - pip install -e ./quartet_epcis
-    - pip install -r requirements_test.txt
     - pip install sphinx sphinx_rtd_theme pygments ipython recommonmark
     - make docs
     - mv docs/_build/html/ public/
