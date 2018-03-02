@@ -52,8 +52,7 @@ class Rule:
 
         Raises a Rule.StepsNotConfigured exception if no steps were configured.
 
-        :param data: The data to be handled by each of the steps in the
-        rule.
+        :param data: The data to be handled by each of the steps in the rule.
         '''
         if len(self.steps) == 0:
             raise self.StepsNotConfigured(
