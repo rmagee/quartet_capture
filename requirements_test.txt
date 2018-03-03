@@ -11,3 +11,4 @@ celery
 django
 djangorestframework
 lxml
+haikunator

@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
+from django.core.files import storage
 
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
@@ -21,7 +22,7 @@ from rest_framework import status
 from rest_framework import exceptions
 
 from quartet_capture.tasks import execute_rule
-from quartet_capture.models import Rule
+from quartet_capture.models import Rule, Task
 
 import logging
 
@@ -52,6 +53,7 @@ class CaptureInterface(APIView):
                                                'Host Info not Available'))
         # get the rule from the query parameter
         rule_name = request.query_params.get('rule', None)
+        run = request.query_params.get('run-immediately', False)
         if not rule_name:
             raise exceptions.APIException(
                 'You must supply the rule Query '
@@ -72,11 +74,19 @@ class CaptureInterface(APIView):
             )
         # execute the rule as a task in celery
         logger.debug('Executing rule %s', rule_name)
-        # read the data
-        data = message.read()
-        execute_rule.delay(message=data,
-                           rule_name=self._rule_exists(rule_name))
-        return Response('Message was queued.')
+
+        rule = self._rule_exists(rule_name)
+
+        if not run:
+            # create a task and queue it for processing - returns the task name
+            ret = self._queue_task(message, rule, storage.get_storage_class())
+        else:
+            # read the data
+            data = message.read()
+            execute_rule.delay(message=data,
+                               rule_name=rule.name)
+            ret = ('Message was queued.')
+        return Response(ret, status=status.HTTP_201_CREATED)
 
     def _rule_exists(self, rule_name):
         '''
@@ -84,5 +94,27 @@ class CaptureInterface(APIView):
         be found.  Will prevent the potential queueing of large messages
         that don't have a rule to process them with.
         '''
-        Rule.objects.get(name=rule_name)
-        return rule_name
+        rule = Rule.objects.get(name=rule_name)
+        return rule
+
+    def _queue_task(self, message, rule, file_store: storage.Storage):
+        '''
+        Saves the file using
+        the configured FileStorage class using the task.name with `.dat` at
+        the end and then saves the task in the database.  Celery tasks
+        monitor this table for messages and execute any that are marked as
+        QUEUED.
+        :param message: The uploaded file.
+        :param rule: The rule to execute once Celery picks the message off
+        the queue.
+        :param file_store: The configured Django FileStorage class.
+        :return: The task name.
+        '''
+        store = file_store()
+        task = Task()
+        task.rule = rule
+        filename = '{0}.dat'.format(task.name)
+        task.location = store.save(name=filename, content=message)
+        task.status = 'QUEUED'
+        task.save()
+        return task.name

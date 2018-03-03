@@ -23,10 +23,10 @@ def get_version(*file_paths):
 
 version = get_version("quartet_capture", "__init__.py")
 
-
 if sys.argv[-1] == 'publish':
     try:
         import wheel
+
         print("Wheel version: ", wheel.__version__)
     except ImportError:
         print('Wheel library missing. Please run "pip install wheel"')
@@ -56,7 +56,7 @@ setup(
         'quartet_capture',
     ],
     include_package_data=True,
-    install_requires=["django-model-utils>=2.0",],
+    install_requires=["django-model-utils>=2.0", "haikunator"],
     license="GPLv3",
     zip_safe=False,
     keywords='quartet_capture',
