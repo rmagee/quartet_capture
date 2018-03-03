@@ -20,13 +20,7 @@ from model_utils import models as utils
 from model_utils import Choices
 from haikunator import Haikunator
 
-h = Haikunator()
-def haiku():
-    '''
-    Create haiku style unique ids.
-    :return: A string haiku with hex token.
-    '''
-    return h.haikunate(token_hex=True)
+haiku = Haikunator()
 
 class Task(utils.StatusModel):
     '''
@@ -42,7 +36,7 @@ class Task(utils.StatusModel):
         verbose_name=_('Name'),
         unique=True,
         primary_key=True,
-        default=haiku
+        default=haiku.haikunate
     )
     rule = models.ForeignKey(
         'quartet_capture.Rule',
