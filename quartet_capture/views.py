@@ -85,7 +85,7 @@ class CaptureInterface(APIView):
             data = message.read()
             execute_rule.delay(message=data,
                                rule_name=rule.name)
-            ret = ('Message was queued.')
+            ret = 'Message brokered for execution.'
         return Response(ret, status=status.HTTP_201_CREATED)
 
     def _rule_exists(self, rule_name):

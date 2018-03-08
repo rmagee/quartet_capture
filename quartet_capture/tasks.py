@@ -66,7 +66,7 @@ def execute_queued_task(task_name: str):
         db_task.status = 'FINISHED'
     except:
         logger.exception()
-        db_task.status = 'ERROR'
+        db_task.status = 'FAILED'
         raise
     finally:
         db_task.end = datetime.now()

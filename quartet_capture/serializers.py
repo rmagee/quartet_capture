@@ -38,7 +38,14 @@ class StepSerializer(ModelSerializer):
         model = models.Step
         fields = '__all__'
 
+
 class StepParameterSerializer(ModelSerializer):
     class Meta:
         model = models.StepParameter
+        fields = '__all__'
+
+
+class TaskSerializer(ModelSerializer):
+    class Meta:
+        model = models.Task
         fields = '__all__'

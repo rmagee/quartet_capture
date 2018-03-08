@@ -41,3 +41,8 @@ class StepViewSet(viewsets.ModelViewSet):
 class StepParameterViewSet(viewsets.ModelViewSet):
     queryset = models.StepParameter.objects.all()
     serializer_class = serializers.StepParameterSerializer
+
+
+class TaskViewset(viewsets.ModelViewSet):
+    queryset = models.Task.objects.all()
+    serializer_class = serializers.TaskSerializer

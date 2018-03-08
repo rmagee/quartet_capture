@@ -22,6 +22,16 @@ from haikunator import Haikunator
 
 haiku = Haikunator()
 
+
+def haikunate():
+    '''
+    Since the haikunator is a class method
+    it could not be used directly as a default callable for
+    a django field...hence this function.
+    '''
+    return haiku.haikunate(token_length=4 , token_hex=True)
+
+
 class Task(utils.StatusModel):
     '''
     Keeps track of the processing of a message.  When messages are stored
@@ -36,7 +46,7 @@ class Task(utils.StatusModel):
         verbose_name=_('Name'),
         unique=True,
         primary_key=True,
-        default=haiku.haikunate
+        default=haikunate
     )
     rule = models.ForeignKey(
         'quartet_capture.Rule',
@@ -44,7 +54,7 @@ class Task(utils.StatusModel):
         verbose_name=_('Rule'),
         on_delete=models.CASCADE
     )
-    STATUS = Choices('RUNNING', 'FINISHED', 'QUEUED', 'ERROR')
+    STATUS = Choices('RUNNING', 'FINISHED', 'WAITING', 'FAILED')
 
 
 class Field(models.Model):
@@ -84,7 +94,7 @@ class Rule(models.Model):
         help_text=_('A rule is composed of multiple steps that execute in '
                     'order.'),
         verbose_name=_('Rule'),
-        unique=True
+        primary_key=True
     )
     description = models.CharField(
         max_length=500,
