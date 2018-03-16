@@ -79,6 +79,9 @@ class Field(models.Model):
         verbose_name=_('Description')
     )
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         abstract = True
         app_label = 'quartet_capture'
@@ -102,6 +105,9 @@ class Rule(models.Model):
         help_text=_('A short description.'),
         verbose_name=_('Description')
     )
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = _('Rule')
@@ -169,6 +175,9 @@ class Step(models.Model):
         help_text=_('The parent rule.'),
         verbose_name=_('Rule')
     )
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = _('Step')
