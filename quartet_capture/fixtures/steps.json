@@ -1,1 +1,0 @@
-[{"model": "quartet_capture.step", "pk": 1, "fields": {"name": "epcis", "description": "Parses epcis using the quartet_epcis python package.", "step_class": "quartet_epcis.parsing.steps.EPCISParsingStep", "order": 1, "rule": 1}}]

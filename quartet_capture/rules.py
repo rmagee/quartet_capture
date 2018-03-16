@@ -15,7 +15,7 @@
 
 import logging
 import importlib
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from quartet_capture import models
 from pydoc import locate
 
