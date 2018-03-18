@@ -30,10 +30,10 @@ to loop through each step in the steps dictionary and execute each step by
 calling the `rules.Step.execute` instance method on each.
 
 ## What is a Rule?
-> Before we start, to avoid any confusion, let's make it clear that
+Before we start, to avoid any confusion, let's make it clear that
 there are two types of Rule classes:
->* `quartet_capture.models.Rule` - used to store info about rules in the database
->* `quartet_capture.rules.Rule` - classes that use info from models.Rule to execute business
+* `quartet_capture.models.Rule` - used to store info about rules in the database
+* `quartet_capture.rules.Rule` - classes that use info from models.Rule to execute business
 logic.
 
 The rule database model stores all data necessary to instantiate a 
@@ -74,10 +74,10 @@ rp.save()
 So above, we create a database `Rule` model and a parameter for the rule. We
 also save both to the database which stores the configuration for later use.   
 
->NOTE: When a Rule configuration is later used during exection in the rule
+**NOTE: When a Rule configuration is later used during exection in the rule
 engine- the parameters for a given Rule are passed into the 
 rules.Rule instances and are used in the context dictionary which is 
-passed to every step in a given rule.Rule instance.
+passed to every step in a given rule.Rule instance.**
 
 ### Create a Step Configuration for our Rule Model
 
@@ -90,10 +90,10 @@ memory as `rules.Step` instance.
 
 ***
 
-> #### Super Important NOTE!
->When you define the `step_class` property for a `models.Step` instance,
+#### Super Important NOTE!
+*When you define the `step_class` property for a `models.Step` instance,
 you must make sure the class path is complete and that it's parent package
-is on the PYTHONPATH- otherwise it will not load.
+is on the PYTHONPATH- otherwise it will not load.*
 
 ***
 
@@ -108,11 +108,11 @@ epcis_step.rule = db_rule
 epcis_step.save()
 ```
 
-> Above we used the `quartet_capture.rules.Step` implementation defined 
+*Above we used the `quartet_capture.rules.Step` implementation defined 
 in the `quartet_epcis.parsing.steps` module as an example.  The
 `quartet_capture.rules.Step` is an abstract base class that is meant
 to be implemented by developers to customize rule processing.  More on 
-this later.
+this later.*
 
 
     
