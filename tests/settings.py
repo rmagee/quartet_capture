@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "quartet_epcis",
     "quartet_capture.apps.QuartetCaptureConfig",
-    "django_celery_results"
 ]
 
 SITE_ID = 1
