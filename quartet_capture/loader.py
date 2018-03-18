@@ -15,8 +15,12 @@
 
 from quartet_capture.models import Rule, Step
 
-
 def load_data():
+    '''
+    Use this utility at the command line to load the default step
+    included in this package.
+    :return: None.
+    '''
     rule = Rule.objects.create(
         name='EPCIS Parsing Rule',
         description='Default EPCIS 1.2 Parsing Rule')
