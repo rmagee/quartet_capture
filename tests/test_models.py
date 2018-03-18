@@ -26,6 +26,7 @@ from django.test import TestCase
 
 from quartet_capture import models
 from quartet_capture import rules
+from quartet_capture.loader import load_data
 
 
 class TestQuartet_capture(TestCase):
@@ -42,6 +43,9 @@ class TestQuartet_capture(TestCase):
         rule = rules.Rule(db_rule)
         # execute the rule
         rule.execute(data)
+
+    def test_data_loader(self):
+        load_data()
 
     def _create_rule(self):
         db_rule = models.Rule()
