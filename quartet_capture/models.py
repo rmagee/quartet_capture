@@ -29,7 +29,7 @@ def haikunate():
     it could not be used directly as a default callable for
     a django field...hence this function.
     '''
-    return haiku.haikunate(token_length=4 , token_hex=True)
+    return haiku.haikunate(token_length=4, token_hex=True)
 
 
 class Task(utils.StatusModel):
@@ -55,6 +55,12 @@ class Task(utils.StatusModel):
         on_delete=models.CASCADE
     )
     STATUS = Choices('RUNNING', 'FINISHED', 'WAITING', 'FAILED')
+
+    execution_time = models.PositiveIntegerField(
+        default=0,
+        help_text=_('The time (in seconds) it took for this task to execute.'),
+        verbose_name=_('Execution Time'),
+    )
 
 
 class Field(models.Model):

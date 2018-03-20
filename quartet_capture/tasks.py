@@ -20,7 +20,7 @@ from celery import shared_task
 from quartet_capture.models import Rule as DBRule
 from quartet_capture.models import Task as DBTask
 from quartet_capture.rules import Rule
-
+import time
 
 logger = getLogger('quartet_capture')
 
@@ -49,25 +49,28 @@ def execute_queued_task(task_name: str):
     :param message: The message to queue.
     :param rule_name: The rule name to process the message with.
     '''
-    # get the task
     db_task = DBTask.objects.get(name=task_name)
     try:
+        start = time.time()
         logger.debug('Running task %s', db_task.name)
         # update the start time and status
         db_task.start = datetime.now()
         db_task.status = 'RUNNING'
         db_task.save()
         # load the message
-        storage = get_storage_class()
-        message_file = storage.open('{0}.dat'.format(db_task.name))
+        storage_class = get_storage_class()
+        django_storage = storage_class()
+        message_file = django_storage.open(name='{0}.dat'.format(db_task.name))
         data = message_file.read()
         # call execute rule
-        execute_rule(message, db_task.rule.name)
+        execute_rule(data, db_task.rule.name)
         db_task.status = 'FINISHED'
     except:
-        logger.exception()
+        logger.exception('Could not execute task with name %s', task_name)
         db_task.status = 'FAILED'
         raise
     finally:
         db_task.end = datetime.now()
-
+        end = time.time()
+        db_task.execution_time = (end-start)
+        db_task.save()

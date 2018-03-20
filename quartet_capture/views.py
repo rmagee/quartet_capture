@@ -20,14 +20,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions
+from django.db import transaction
 
-from quartet_capture.tasks import execute_rule
+from quartet_capture.tasks import execute_rule, execute_queued_task
 from quartet_capture.models import Rule, Task
 
 import logging
 
 logger = logging.getLogger('quartet_capture')
-
 
 class CaptureInterface(APIView):
     '''
@@ -79,7 +79,10 @@ class CaptureInterface(APIView):
 
         if not run:
             # create a task and queue it for processing - returns the task name
-            ret = self._queue_task(message, rule, storage.get_storage_class())
+            storage_class = storage.get_storage_class()
+            django_storage = storage_class()
+            ret = self._queue_task(message, rule, django_storage)
+            execute_queued_task.delay(task_name=ret)
         else:
             # read the data
             data = message.read()
@@ -97,6 +100,7 @@ class CaptureInterface(APIView):
         rule = Rule.objects.get(name=rule_name)
         return rule
 
+    @transaction.atomic
     def _queue_task(self, message, rule, file_store: storage.Storage):
         '''
         Saves the file using
@@ -108,13 +112,12 @@ class CaptureInterface(APIView):
         :param rule: The rule to execute once Celery picks the message off
         the queue.
         :param file_store: The configured Django FileStorage class.
-        :return: The task name.
+        :return: The Task.
         '''
-        store = file_store()
         task = Task()
         task.rule = rule
         filename = '{0}.dat'.format(task.name)
-        task.location = store.save(name=filename, content=message)
+        task.location = file_store.save(name=filename, content=message)
         task.status = 'QUEUED'
         task.save()
         return task.name
