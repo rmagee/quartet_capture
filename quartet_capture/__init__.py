@@ -12,5 +12,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
