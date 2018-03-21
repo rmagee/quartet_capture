@@ -75,21 +75,17 @@ class CaptureInterface(APIView):
             )
         # execute the rule as a task in celery
         logger.debug('Executing rule %s', rule_name)
-
         rule = self._rule_exists(rule_name)
+        storage_class = storage.get_storage_class()
+        django_storage = storage_class()
+        ret = self._queue_task(message, rule, django_storage)
 
-        if not run:
+        if run:
             # create a task and queue it for processing - returns the task name
-            storage_class = storage.get_storage_class()
-            django_storage = storage_class()
-            ret = self._queue_task(message, rule, django_storage)
-            execute_queued_task.delay(task_name=ret)
+            execute_queued_task(task_name=ret)
         else:
-            # read the data
-            data = message.read()
-            execute_rule.delay(message=data,
-                               rule_name=rule.name)
-            ret = 'Message brokered for execution.'
+            execute_queued_task.delay(task_name=ret)
+
         return Response(ret, status=status.HTTP_201_CREATED)
 
     def _rule_exists(self, rule_name):
