@@ -13,9 +13,15 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 import os
+import django
+os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
+django.setup()
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from quartet_capture import models
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
+django.setup()
 
 
 class ViewTest(APITestCase):
@@ -26,6 +32,13 @@ class ViewTest(APITestCase):
     def test_data(self):
         self._create_rule()
         url = reverse('quartet-capture')
+        data = self._get_test_data()
+        self.client.post('{0}?rule=epcis'.format(url), {'file': data},
+                         format='multipart')
+
+    def test_epcis(self):
+        self._create_rule()
+        url = reverse('epcis-capture')
         data = self._get_test_data()
         self.client.post('{0}?rule=epcis'.format(url), {'file': data},
                          format='multipart')

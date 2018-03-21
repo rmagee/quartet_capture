@@ -15,7 +15,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
 from __future__ import unicode_literals, absolute_import
-
+import os
 import django
 
 
@@ -29,6 +29,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
+        "TEST_NAME": os.path.join(os.path.dirname(__file__), 'test.db'),
     }
 }
 ROOT_URLCONF = "tests.urls"

@@ -12,8 +12,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
+import io
 from django.core.files import storage
-
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.request import Request
@@ -28,6 +28,7 @@ from quartet_capture.models import Rule, Task
 import logging
 
 logger = logging.getLogger('quartet_capture')
+
 
 class CaptureInterface(APIView):
     '''
@@ -64,7 +65,7 @@ class CaptureInterface(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
         # get the message from the request
-        message = request.FILES.get('file')
+        message = request.FILES.get('file') or request.POST.get('file')
         if not message:
             raise exceptions.APIException(
                 'No "file" field variable found in the HTTP POST data.  The '
@@ -117,7 +118,30 @@ class CaptureInterface(APIView):
         task = Task()
         task.rule = rule
         filename = '{0}.dat'.format(task.name)
+        if isinstance(message, str):
+            message = io.StringIO(message)
         task.location = file_store.save(name=filename, content=message)
         task.status = 'QUEUED'
         task.save()
         return task.name
+
+
+class EPCISCapture(CaptureInterface):
+    '''
+    A more strict implementation of the EPCIS capture interface to
+    meet requirements in section 10.2 of the EPCIS 1.2 protocol.
+    '''
+
+    def post(self, request: Request):
+        message = request.FILES.get('file') or request.POST.get('file')
+        if message and not isinstance(message, str):
+            message = message.read()
+        if 'EPCISDocument' not in message:
+            raise status.HTTP_400_BAD_REQUEST(
+                'The EPCIS capture interface '
+                'is for EPCIS Documents only. To submit other '
+                'types of data use the quartet-capture '
+                'interface.'
+            )
+        # TODO: perhaps more sophisticated checking?
+        return super().post(request, format)

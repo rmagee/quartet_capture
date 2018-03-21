@@ -25,6 +25,9 @@ urlpatterns = [
     url(r'^quartet-capture/$',
         views.CaptureInterface.as_view(),
         name='quartet-capture'),
+    url(r'^epcis-capture/$',
+        views.EPCISCapture.as_view(),
+        name='epcis-capture')
 ]
 
 urlpatterns += route_patterns
