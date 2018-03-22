@@ -65,12 +65,12 @@ def execute_queued_task(task_name: str):
         # call execute rule
         execute_rule(data, db_task.rule.name)
         db_task.status = 'FINISHED'
-    except:
+    except Exception:
         logger.exception('Could not execute task with name %s', task_name)
         db_task.status = 'FAILED'
         raise
     finally:
         db_task.end = datetime.now()
         end = time.time()
-        db_task.execution_time = (end-start)
+        db_task.execution_time = (end - start)
         db_task.save()

@@ -75,13 +75,10 @@ Ready to contribute? Here's how to set up `quartet_capture` for local developmen
    Now you can make your changes locally.
 
 5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+   tests.
 
         $ flake8 quartet_capture tests
-        $ python setup.py test
-        $ tox
-
-   To get flake8 and tox, just pip install them into your virtualenv.
+        $ python manage.py test
 
 6. Commit your changes and push your branch to GitHub::
 

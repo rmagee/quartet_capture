@@ -15,6 +15,7 @@
 
 from rest_framework import permissions
 
+
 class CaptureInterfacePermission(permissions.BasePermission):
     message = 'Capture interface access not allowed.'
 

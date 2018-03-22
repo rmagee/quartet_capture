@@ -14,23 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
-
-"""
-test_quartet_capture
-------------
-
-Tests for `quartet_capture` models module.
-"""
 import os
 import django
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 django.setup()
-from django.test import TestCase
 
+from django.test import TestCase
 from quartet_capture import models
 from quartet_capture import rules
 from quartet_capture.loader import load_data
-
 
 
 class TestQuartet_capture(TestCase):

@@ -15,6 +15,7 @@
 
 from quartet_capture.models import Rule, Step
 
+
 def load_data():
     '''
     Use this utility at the command line to load the default step
@@ -33,4 +34,3 @@ def load_data():
         order=1
     )
     step.save()
-

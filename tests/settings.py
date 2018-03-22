@@ -49,6 +49,7 @@ if django.VERSION >= (1, 10):
 else:
     MIDDLEWARE_CLASSES = ()
 
+MEDIA_ROOT='/tmp/'
 
 import logging
 logging.basicConfig(

@@ -12,8 +12,3 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
-from django.conf import settings
-
-QUARTET_CAPTURE_BROKER = getattr(settings, 'QUARTET_CAPTURE_BROKER',
-                                 'pyamqp://guest@localhost//')
-

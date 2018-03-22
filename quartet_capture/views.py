@@ -22,7 +22,7 @@ from rest_framework import status
 from rest_framework import exceptions
 from django.db import transaction
 
-from quartet_capture.tasks import execute_rule, execute_queued_task
+from quartet_capture.tasks import execute_queued_task
 from quartet_capture.models import Rule, Task
 
 import logging

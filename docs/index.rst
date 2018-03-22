@@ -5,6 +5,12 @@
 
 QU4RTET Capture Documentation
 =================================================================
+The QU4RTET Capture app enables the "capture" and subsequent processing
+of messages through a primitive processing engine that allows developers
+to customize how messages get processed.  The capture application also
+contains a standard EPCIS capture interface implementation as well.  The
+application code for processing EPCIS messages is in the SerialLab
+`quartet_epcis.parsing.steps.EPCISParsingStep` module.
 
 Contents:
 
@@ -17,4 +23,4 @@ Contents:
     authors
     history
     rules
-    settings
+    epcis

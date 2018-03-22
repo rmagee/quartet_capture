@@ -122,9 +122,7 @@ class Rule:
         :param data: The data that was passed in.
         :param context: The rule context dict.
         '''
-
-    def _initialize_context(self):
-        rule_fiels = self.db_rule.field_s
+        pass
 
     class StepNotFound(Exception):
         '''
