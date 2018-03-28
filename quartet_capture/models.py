@@ -103,7 +103,7 @@ class Rule(models.Model):
         help_text=_('A rule is composed of multiple steps that execute in '
                     'order.'),
         verbose_name=_('Rule'),
-        primary_key=True
+        unique=True
     )
     description = models.CharField(
         max_length=500,
@@ -172,7 +172,6 @@ class Step(models.Model):
         help_text=_('Defines the order in which the step is executed.  Steps'
                     'are executed in numerical order.'),
         verbose_name=_('Execution Order'),
-        unique=True,
     )
     rule = models.ForeignKey(
         Rule,
@@ -187,7 +186,7 @@ class Step(models.Model):
 
     class Meta:
         verbose_name = _('Step')
-        unique_together = ('name', 'rule')
+        unique_together = ('name', 'rule', 'order')
         app_label = 'quartet_capture'
 
 
