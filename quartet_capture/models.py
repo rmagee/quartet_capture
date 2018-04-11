@@ -163,7 +163,7 @@ class Step(models.Model):
     step_class = models.CharField(
         max_length=100,
         null=False,
-        help_text=_('The full python path to where the Step class is defined'
+        help_text=_('The full python path to where the Step class is defined '
                     'for example, mypackage.mymodule.MyStep'),
         verbose_name=_('Class Path')
     )
