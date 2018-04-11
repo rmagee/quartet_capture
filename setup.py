@@ -42,13 +42,15 @@ if sys.argv[-1] == 'tag':
     sys.exit()
 
 readme = open('README.md').read()
+# TODO: change readme to rst format for pypi
+
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='quartet_capture',
     version=version,
     description="""A capture and queuing interface for QU4RTET.""",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author='Rob Magee',
     author_email='slab@serial-lab.com',
     url='https://gitlab.com/serial-lab/quartet_capture',
@@ -61,16 +63,16 @@ setup(
     zip_safe=False,
     keywords='quartet_capture',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Framework :: Django',
-        'Framework :: Django :: 1.8',
-        'Framework :: Django :: 1.9',
-        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 2.0',
+        'Intended Audience :: Healthcare Industry',
+        'Intended Audience :: Manufacturing',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License v3',
+        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 )
