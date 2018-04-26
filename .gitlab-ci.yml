@@ -1,6 +1,7 @@
 stages:
   - test-python
   - build-docs
+  - pypi
 
 before_script:
   - bash
