@@ -41,7 +41,7 @@ python3_6_unit_test:
       - htmlcov/
 
 pages:
-    image: seriallab/python3.5dev
+    image: seriallab/python3.6dev
     stage: build-docs
     script:
     - pip install sphinx sphinx_rtd_theme pygments ipython recommonmark
@@ -53,3 +53,23 @@ pages:
         expire_in: 1d
     only:
       - master
+      - tags
+
+deploy_pypi:
+  image: seriallab/python3.6dev
+  stage: pypi
+  environment:
+    name: deployment
+    url: https://pypi.org/
+  script:
+    - echo "[distutils]" >> ~/.pypirc
+    - echo "index-servers = " >> ~/.pypirc
+    - echo "[pypi]" >> ~/.pypirc
+    - echo "username=$PYPI_USER" >> ~/.pypirc
+    - echo "password=$PYPI_PASSWORD" >> ~/.pypirc
+    - python setup.py check sdist bdist_wheel upload
+    - rm ~/.pypirc
+  only:
+    - master
+    - tags
+    #- /\d+\.\d+\.\d+([abc]\d*)?$/

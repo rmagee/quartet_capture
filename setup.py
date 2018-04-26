@@ -5,7 +5,7 @@ import re
 import sys
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 
@@ -41,7 +41,7 @@ if sys.argv[-1] == 'tag':
     os.system("git push --tags")
     sys.exit()
 
-readme = open('README.md').read()
+readme = open('README.rst').read()
 # TODO: change readme to rst format for pypi
 
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
@@ -54,9 +54,7 @@ setup(
     author='Rob Magee',
     author_email='slab@serial-lab.com',
     url='https://gitlab.com/serial-lab/quartet_capture',
-    packages=[
-        'quartet_capture',
-    ],
+    packages=find_packages(),
     include_package_data=True,
     install_requires=["django-model-utils>=2.0", "haikunator"],
     license="GPLv3",
