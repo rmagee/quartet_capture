@@ -2,32 +2,32 @@
 QU4TET CAPTURE
 --------------
 
-.. image:: https://gitlab.com/serial-lab/EParseCIS/badges/master/pipeline.svg
+.. image:: https://gitlab.com/serial-lab/quartet_capture/badges/master/pipeline.svg
         :target: https://gitlab.com/serial-lab/quartet_capture/commits/master
 
-.. image:: https://gitlab.com/serial-lab/EParseCIS/badges/master/coverage.svg
+.. image:: https://gitlab.com/serial-lab/quartet_capture/badges/master/coverage.svg
         :target: https://gitlab.com/serial-lab/quartet_capture/pipelines
 
 .. code-block::text
 
-         .d8888b.      d8888  8888888b. 88888888888 888     888 8888888b.  8888888888 
-        d88P  Y88b    d8P888  888   Y88b    888     888     888 888   Y88b 888        
-        888    888   d8P 888  888    888    888     888     888 888    888 888        
-        888         d8P  888  888   d88P    888     888     888 888   d88P 8888888    
-        888        d88   888  8888888P"     888     888     888 8888888P"  888        
-        888    888 8888888888 888           888     888     888 888 T88b   888        
-        Y88b  d88P       888  888           888     Y88b. .d88P 888  T88b  888        
+         .d8888b.      d8888  8888888b. 88888888888 888     888 8888888b.  8888888888
+        d88P  Y88b    d8P888  888   Y88b    888     888     888 888   Y88b 888
+        888    888   d8P 888  888    888    888     888     888 888    888 888
+        888         d8P  888  888   d88P    888     888     888 888   d88P 8888888
+        888        d88   888  8888888P"     888     888     888 8888888P"  888
+        888    888 8888888888 888           888     888     888 888 T88b   888
+        Y88b  d88P       888  888           888     Y88b. .d88P 888  T88b  888
          "Y8888P"        888  888           888      "Y88888P"  888   T88b 8888888888
 
-A capture and queuing interface for QU4RTET.  This package defines the 
-generic structure of the QU4RTET rule engine and defines the base classes 
+A capture and queuing interface for QU4RTET.  This package defines the
+generic structure of the QU4RTET rule engine and defines the base classes
 necessary for use when extending the functionality of QU4RTET.
 
 Documentation
 =============
 
-The full documentation here includes an overall explanation and example of 
-implementing rules and steps along with installation instructions: 
+The full documentation here includes an overall explanation and example of
+implementing rules and steps along with installation instructions:
 
 https://serial-lab.gitlab.io/quartet_capture
 
