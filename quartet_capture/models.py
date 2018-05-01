@@ -170,7 +170,7 @@ class Step(models.Model):
     order = models.IntegerField(
         null=False,
         help_text=_('Defines the order in which the step is executed.  Steps'
-                    'are executed in numerical order.'),
+                    ' are executed in numerical order.'),
         verbose_name=_('Execution Order'),
     )
     rule = models.ForeignKey(
