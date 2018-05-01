@@ -21,9 +21,17 @@ from rest_framework.serializers import ModelSerializer
 from quartet_capture import models
 
 
-class RuleSerializer(ModelSerializer):
+class StepParameterSerializer(ModelSerializer):
     class Meta:
-        model = models.Rule
+        model = models.StepParameter
+        fields = '__all__'
+
+
+class StepSerializer(ModelSerializer):
+    stepparameter_set = StepParameterSerializer(many=True, read_only=False)
+
+    class Meta:
+        model = models.Step
         fields = '__all__'
 
 
@@ -33,15 +41,12 @@ class RuleParameterSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class StepSerializer(ModelSerializer):
-    class Meta:
-        model = models.Step
-        fields = '__all__'
+class RuleSerializer(ModelSerializer):
+    ruleparameter_set = RuleParameterSerializer(many=True, read_only=False)
+    step_set = StepSerializer(many=True, read_only=True)
 
-
-class StepParameterSerializer(ModelSerializer):
     class Meta:
-        model = models.StepParameter
+        model = models.Rule
         fields = '__all__'
 
 
