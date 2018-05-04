@@ -28,8 +28,6 @@ class StepParameterSerializer(ModelSerializer):
 
 
 class StepSerializer(ModelSerializer):
-    stepparameter_set = StepParameterSerializer(many=True, read_only=False)
-
     class Meta:
         model = models.Step
         fields = '__all__'
@@ -42,7 +40,6 @@ class RuleParameterSerializer(ModelSerializer):
 
 
 class RuleSerializer(ModelSerializer):
-    ruleparameter_set = RuleParameterSerializer(many=True, read_only=False)
     step_set = StepSerializer(many=True, read_only=True)
 
     class Meta:
