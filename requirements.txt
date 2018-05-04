@@ -2,3 +2,4 @@ django-model-utils>=2.0
 celery
 haikunator
 # Additional requirements go here
+django-filter
