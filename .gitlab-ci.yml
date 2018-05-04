@@ -53,7 +53,6 @@ pages:
         - public
         expire_in: 1d
     only:
-      - master
       - tags
 
 deploy_pypi:
@@ -71,6 +70,5 @@ deploy_pypi:
     - python setup.py check sdist bdist_wheel upload
     - rm ~/.pypirc
   only:
-    - master
     - tags
     #- /\d+\.\d+\.\d+([abc]\d*)?$/
