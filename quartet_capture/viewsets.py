@@ -25,9 +25,7 @@ from quartet_capture import serializers
 
 class RuleViewSet(viewsets.ModelViewSet):
     queryset = models.Rule.objects.prefetch_related(
-        'ruleparameter_set',
         'step_set',
-        'step_set__stepparameter_set'
     ).all()
     serializer_class = serializers.RuleSerializer
 
