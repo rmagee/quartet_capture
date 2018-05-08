@@ -56,7 +56,7 @@ setup(
     url='https://gitlab.com/serial-lab/quartet_capture',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=["django-model-utils>=2.0", "haikunator"],
+    install_requires=["haikunator"],
     license="GPLv3",
     zip_safe=False,
     keywords='quartet_capture',
