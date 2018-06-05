@@ -24,7 +24,7 @@ from django.test import TestCase
 from quartet_capture import models
 from quartet_capture import rules
 from quartet_capture.loader import load_data
-
+from quartet_capture.rules import TaskMessaging
 
 class TestQuartet_capture(TestCase):
 
@@ -33,11 +33,11 @@ class TestQuartet_capture(TestCase):
 
     def test_epcis_rule(self):
         # create a new rule and give it a test parameter
-        db_rule = self._create_rule()
-        # load some XML into memory
+        db_task = self._create_task()
+        db_rule = db_task.rule
         data = self.load_test_data()
         # declare a rule class
-        rule = rules.Rule(db_rule)
+        rule = rules.Rule(db_rule, db_task)
         # execute the rule
         rule.execute(data)
 
@@ -62,10 +62,31 @@ class TestQuartet_capture(TestCase):
         epcis_step.save()
         return db_rule
 
+    def _create_task(self):
+        db_task = models.Task()
+        db_task.status = 'QUEUED'
+        db_task.name = 'test'
+        db_task.rule = self._create_rule()
+        db_task.save()
+        return db_task
+
     def load_test_data(self):
         curpath = os.path.dirname(__file__)
         f = open(os.path.join(curpath, 'data/epcis.xml'))
         return f.read().encode()
+
+    def test_task_messages(self):
+        rule = self._create_rule()
+        task = models.Task()
+        task.name='Test task'
+        task.status='RUNNING'
+        task.rule=rule
+        task.save()
+        tm = TaskMessaging()
+        tm.debug('This is a debugmessage', task)
+        tm.info('This is an info message', task)
+        tm.warning('This is a warning!', task)
+        tm.error('This is an error!!!', task)
 
     def tearDown(self):
         pass

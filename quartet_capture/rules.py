@@ -13,16 +13,92 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
+
 import logging
 import importlib
+from enum import Enum
 from abc import ABCMeta, abstractmethod
 from quartet_capture import models
 from pydoc import locate
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger('quartet_capture')
 
 
-class Rule:
+class TaskMessageLevel(Enum):
+    INFO = 'INFO'
+    DEBUG = 'DEBUG'
+    WARNING = 'WARNING'
+    ERROR = 'ERROR'
+
+
+class TaskMessaging:
+    '''
+    A helper class to handle the creation and insertion of task messages.
+    '''
+
+    def __init__(self, task: models.Task = None):
+        '''
+        Initializes with an optional default task.
+        :param task: The task to associate messages with.
+        '''
+        self.task = task
+
+    def debug(self, message: str, task: models.Task = None):
+        '''
+        Creates a debug message.
+        :param message: The message to store.
+        :param task: The associated task.
+        '''
+        self._create_task_message(message, task or self.task,
+                                  TaskMessageLevel.DEBUG)
+
+    def info(self, message: str, task: models.Task = None):
+        '''
+        Creates an info message.
+        :param message: The message to store.
+        :param task: The associated task.
+        '''
+        self._create_task_message(message, task)
+
+    def warning(self, message: str, task: models.Task = None):
+        '''
+        Creates a warning message.
+        :param message: The message to store.
+        :param task: The associated task.
+        '''
+        self._create_task_message(message, task, TaskMessageLevel.WARNING)
+
+    def error(self, message: str, task: models.Task = None):
+        '''
+        Creates an error message.
+        :param message: The message to store.
+        :param task: The associated task.
+        '''
+        self._create_task_message(message, task, TaskMessageLevel.ERROR)
+
+    def _create_task_message(
+        self,
+        message: str,
+        task: models.Task = None,
+        level: TaskMessageLevel = TaskMessageLevel.INFO,
+    ):
+        '''
+        Creates a TaskMessage model instance and saves it.
+        :param message: The message to store.
+        :param task: The associated task.
+        :param level: The severity of the message.
+        '''
+        if not (task or self.task):
+            raise models.Task.DoesNotExist('No task was supplied.')
+        models.TaskMessage.objects.create(
+            message=message,
+            task=task or self.task,
+            level=level.value
+        )
+
+
+class Rule(TaskMessaging):
     '''
     The Rule class loads all models.Step data from the database and creates,
     from each model, a concrete Step class that can execute against the
@@ -30,7 +106,7 @@ class Rule:
     in the database by their `order` field.
     '''
 
-    def __init__(self, rule: models.Rule):
+    def __init__(self, rule: models.Rule, task: models.Task):
         '''
         A Rule is a conglomeration of Step class instances along with
         a context that gets passed along to each step as it is executed.
@@ -41,6 +117,8 @@ class Rule:
         :param rule: The django models.Rule instance.
         '''
         self.db_rule = rule
+        self.db_task = task
+        super().__init__(self.db_task)
         self.steps = self._load_steps()
         self.context = {p.name: p.value for p in
                         self.db_rule.ruleparameter_set.all()}
@@ -54,7 +132,9 @@ class Rule:
 
         :param data: The data to be handled by each of the steps in the rule.
         '''
+        self.info(_('Beginning execution of the Rule.'))
         if len(self.steps) == 0:
+            self.error(_('No steps were configured for the rule. Aborting.'))
             raise self.StepsNotConfigured(
                 'The rule %s was loaded with no '
                 'steps configured.' % self.db_rule.name
@@ -82,10 +162,16 @@ class Rule:
         :param db_step: The database Step configuration.
         :return: A Step instance.
         '''
+        self.info(_('Loading step %s') % db_step.name)
         step = locate(db_step.step_class)
         if not step:
             step = self._step_import(db_step.step_class)
             if not step:
+                self.error(_(
+                    'Step %s could not be loaded. '
+                    'Make sure it and any dependencies are on the PYTHONPATH '
+                    'and that the class string is correct.'
+                ) % db_step.name)
                 raise Rule.StepNotFound(
                     'The step %s could not be loaded. '
                     'make sure it and '
@@ -94,7 +180,8 @@ class Rule:
                 )
         params = {p.name: p.value
                   for p in db_step.stepparameter_set.all()}
-        return step(params)
+        self.info('Step loaded successfully.')
+        return step(params, self.db_task)
 
     def _step_import(self, step_name: str):
         '''
@@ -165,7 +252,7 @@ class Parameter(metaclass=ABCMeta):
         self.regex_pattern = regex_pattern
 
 
-class Step(metaclass=ABCMeta):
+class Step(TaskMessaging, metaclass=ABCMeta):
     '''
     Each Rule has a number of steps that execute in order.
     A step has a defined python.
@@ -180,13 +267,14 @@ class Step(metaclass=ABCMeta):
     steps.
     '''
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, db_task:models.Task, **kwargs):
         '''
         Any parameters loaded from the database will be sent
         via the **kwargs keyword arguments parameter.
         :param args:
         :param kwargs: Any parameters loaded from the database.
         '''
+        super().__init__(db_task)
         self.parameters = kwargs or {}
         self._declared_parameters = []
 

@@ -46,8 +46,17 @@ class RuleSerializer(ModelSerializer):
         model = models.Rule
         fields = '__all__'
 
+class TaskMessageSerializer(ModelSerializer):
+    '''
+    Default serializer for the TaskMessage model.
+    '''
+    class Meta:
+        model = models.TaskMessage
+        fields = '__all__'
 
 class TaskSerializer(ModelSerializer):
+    taskmessage_set = TaskMessageSerializer(many=True, read_only=True)
+
     class Meta:
         model = models.Task
         fields = '__all__'

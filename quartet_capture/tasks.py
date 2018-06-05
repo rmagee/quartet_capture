@@ -26,17 +26,14 @@ logger = getLogger('quartet_capture')
 
 
 @shared_task(name='execute_rule')
-def execute_rule(message: str, rule_name: str):
+def execute_rule(message: str, db_task: DBTask):
     '''
     When a message arrives, creates a record of the message and parses
     it using the appropriate parser.
     :param message_data: The data to be handled.
     '''
-    # get the rule from the database
-    print('executing task')
-    db_rule = DBRule.objects.get(name=rule_name)
-    # create a rule instance with the db rule
-    c_rule = Rule(db_rule)
+    # create an exeuctable rule from a database rule
+    c_rule = Rule(db_task.rule, db_task)
     # execute the rule
     c_rule.execute(message)
 
@@ -63,7 +60,7 @@ def execute_queued_task(task_name: str):
         message_file = django_storage.open(name='{0}.dat'.format(db_task.name))
         data = message_file.read()
         # call execute rule
-        execute_rule(data, db_task.rule.name)
+        execute_rule(data, db_task)
         db_task.status = 'FINISHED'
     except Exception:
         logger.exception('Could not execute task with name %s', task_name)

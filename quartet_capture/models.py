@@ -32,6 +32,14 @@ def haikunate():
     return haiku.haikunate(token_length=4, token_hex=True)
 
 
+SEVERITY_CHOICES = (
+    ('DEBUG', 'DEBUG'),
+    ('INFO', 'INFO'),
+    ('WARNING', 'WARNING'),
+    ('ERROR', 'ERROR')
+)
+
+
 class Task(utils.StatusModel):
     '''
     Keeps track of the processing of a message.  When messages are stored
@@ -60,6 +68,36 @@ class Task(utils.StatusModel):
         default=0,
         help_text=_('The time (in seconds) it took for this task to execute.'),
         verbose_name=_('Execution Time'),
+    )
+
+
+class TaskMessage(models.Model):
+    '''
+    A message relative to the execution of a specific task.
+    '''
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        verbose_name=_("Task"),
+        help_text=_("The task that created the message."),
+        null=False
+    )
+    level = models.CharField(
+        max_length=10,
+        verbose_name=_("Severity Level"),
+        help_text=_("The severity level of the message."),
+        null=False,
+        choices=SEVERITY_CHOICES,
+        default='INFO'
+    )
+    created = utils.AutoCreatedField(
+        verbose_name=_("Created Time"),
+        help_text=_("The time the task message was created."),
+    )
+    message = models.TextField(
+        verbose_name=_("Message"),
+        help_text=_("The message data."),
+        null=False
     )
 
 

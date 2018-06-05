@@ -24,14 +24,19 @@ USE_TZ = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "u_6k^p*oqxbq*h+sbm(kc=iqw&vk6_@gp#!d%p=zqh7a&(^=_o"
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
-        "TEST_NAME": os.path.join(os.path.dirname(__file__), 'test.db'),
     }
 }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": ":memory:",
+#         "TEST_NAME": os.path.join(os.path.dirname(__file__), 'test.db'),
+#     }
+# }
 ROOT_URLCONF = "tests.urls"
 
 INSTALLED_APPS = [

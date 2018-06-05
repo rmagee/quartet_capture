@@ -42,7 +42,7 @@ class ViewTest(APITestCase):
         self._create_rule()
         url = reverse('epcis-capture')
         data = self._get_test_data()
-        self.client.post('{0}?rule=epcis&run-immediately=true'.format(url),
+        ret = self.client.post('{0}?rule=epcis&run-immediately=true'.format(url),
                          {'file': data},
                          format='multipart')
 
