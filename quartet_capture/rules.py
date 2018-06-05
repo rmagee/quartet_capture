@@ -215,3 +215,14 @@ class Step(metaclass=ABCMeta):
         If the data is modified, then subsequent steps will get the
         '''
         pass
+
+    def get_parameter(self, parameter_name):
+        '''
+        A helper function that looks
+        at the local parameters dict and returns a parameter value
+        or None if it does not exist.
+        :param parameter_name: The name of the parameter from which the value
+        should be obtained.
+        :return: The value of the parameter.
+        '''
+        return self.parameters.get(parameter_name, None)
