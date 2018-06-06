@@ -13,7 +13,8 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
-
+import sys
+import traceback
 import logging
 import importlib
 from enum import Enum
@@ -35,6 +36,7 @@ class TaskMessageLevel(Enum):
 class TaskMessaging:
     '''
     A helper class to handle the creation and insertion of task messages.
+    The helper class should never raise an exception handling a message.
     '''
 
     def __init__(self, task: models.Task = None):
@@ -89,13 +91,16 @@ class TaskMessaging:
         :param task: The associated task.
         :param level: The severity of the message.
         '''
-        if not (task or self.task):
-            raise models.Task.DoesNotExist('No task was supplied.')
-        models.TaskMessage.objects.create(
-            message=message,
-            task=task or self.task,
-            level=level.value
-        )
+        try:
+            if not (task or self.task):
+                raise models.Task.DoesNotExist('No task was supplied.')
+            models.TaskMessage.objects.create(
+                message=message,
+                task=task or self.task,
+                level=level.value
+            )
+        except:
+            logger.exception('Could not create TaskMessage.')
 
 
 class Rule(TaskMessaging):
@@ -133,27 +138,47 @@ class Rule(TaskMessaging):
         :param data: The data to be handled by each of the steps in the rule.
         '''
         self.info(_('Beginning execution of the Rule.'))
-        if len(self.steps) == 0:
-            self.error(_('No steps were configured for the rule. Aborting.'))
-            raise self.StepsNotConfigured(
-                'The rule %s was loaded with no '
-                'steps configured.' % self.db_rule.name
-            )
-        for number, step in self.steps.items():
-            logger.debug('Executing step %s.', number)
-            data = step.execute(data, self.context)
+        try:
+            if len(self.steps) == 0:
+                self.error(
+                    _('No steps were configured for the rule. Aborting.'))
+                raise self.StepsNotConfigured(
+                    'The rule %s was loaded with no '
+                    'steps configured.' % self.db_rule.name
+                )
+            for number, step in self.steps.items():
+                logger.debug('Executing step %s.', number)
+                data = step.execute(data, self.context)
+        except Exception:
+            # make sure error info is routed into the TaskMessage
+            # execution messages
+            # for this rule
+            data = traceback.format_exc()
+            self.error('Could not execute the rule.')
+            self.error(data)
+            logger.exception('Failed task execution.')
+            raise
 
     def _load_steps(self):
         '''
         Dynamically loads each of the steps into memory for execution.
         :return: A list of Step instances.
         '''
-        db_steps = self.db_rule.step_set.all()
-        steps = {}
-        for db_step in db_steps:
-            step = self._load_step(db_step)
-            steps[db_step.order] = step
-        return steps
+        try:
+            db_steps = self.db_rule.step_set.all()
+            steps = {}
+            for db_step in db_steps:
+                step = self._load_step(db_step)
+                steps[db_step.order] = step
+            return steps
+        except Exception:
+            # make sure error info is routed into the TaskMessage
+            # execution messages
+            # for this rule
+            data = traceback.format_exc()
+            self.error('Could not load the steps.')
+            self.error(data)
+            raise
 
     def _load_step(self, db_step: models.Step):
         '''
@@ -267,7 +292,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
     steps.
     '''
 
-    def __init__(self, db_task:models.Task, **kwargs):
+    def __init__(self, db_task: models.Task, **kwargs):
         '''
         Any parameters loaded from the database will be sent
         via the **kwargs keyword arguments parameter.

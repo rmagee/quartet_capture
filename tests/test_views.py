@@ -46,6 +46,24 @@ class ViewTest(APITestCase):
                          {'file': data},
                          format='multipart')
 
+    def test_task_api(self):
+        self._create_rule()
+        url = reverse('epcis-capture')
+        data = self._get_test_data()
+        ret = self.client.post('{0}?rule=epcis&run-immediately=true'.format(url),
+                         {'file': data},
+                         format='multipart')
+        # get the task id
+        # query the interface for the task information
+
+    def test_exception(self):
+        import sys, traceback
+        try:
+            x = 0/0
+        except ZeroDivisionError:
+            data = traceback.format_exc()
+            print(data)
+
     def _get_test_data(self):
         '''
         Loads the XML file and passes its data back as a string.
