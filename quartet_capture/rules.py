@@ -301,7 +301,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         '''
         super().__init__(db_task)
         self.parameters = kwargs or {}
-        self._declared_parameters = []
+        self._declared_parameters = {}
 
     @property
     @abstractmethod
@@ -329,7 +329,8 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         '''
         pass
 
-    def get_parameter(self, parameter_name):
+    def get_parameter(self, parameter_name: str,
+                      raise_exception: bool = False):
         '''
         A helper function that looks
         at the local parameters dict and returns a parameter value
@@ -338,4 +339,17 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         should be obtained.
         :return: The value of the parameter.
         '''
-        return self.parameters.get(parameter_name, None)
+        ret = self.parameters.get(parameter_name, None)
+        if not ret and raise_exception == True:
+            raise self.ParameterNotFoundError('Parameter with name %s could '
+                                              'not be found in the parameters'
+                                              'list.  Make sure this parameter'
+                                              'is configured in the Step\'s '
+                                              'parameters settings.')
+        return ret
+
+    class ParameterNotFoundError(Exception):
+        '''
+        Raise when expecting a parameter and it was not found.
+        '''
+        pass
