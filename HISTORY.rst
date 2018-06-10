@@ -17,3 +17,5 @@ created and steps having to have unique order across all steps.
 1.0.0 to 1.0.3
 +++++++++++++++
 Updated continuous integration builds for official 1.0 launch in PyPI.
+Added a default on_failure handler to the base `quartet_capture.rules.Step`
+base class.

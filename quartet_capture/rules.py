@@ -103,12 +103,35 @@ class TaskMessaging:
             logger.exception('Could not create TaskMessage.')
 
 
+class RuleContext:
+    '''
+    The RuleContext is passed to each step in the rule and can be
+    used by steps to pass data to and from one another.
+    '''
+
+    def __init__(self, rule_name, context: dict = {}):
+        self._context = context
+
+    @property
+    def context(self):
+        return self._context
+
+    @context.setter
+    def context(self, value):
+        self._context = value
+
+
 class Rule(TaskMessaging):
     '''
     The Rule class loads all models.Step data from the database and creates,
     from each model, a concrete Step class that can execute against the
     data passed into the rule.  Steps execute in the order they are configured
     in the database by their `order` field.
+
+    A rule will pass a `RuleContext` to all steps in the rule.  The initial
+    state of the context contains the rule name and the rule's parameters (if
+    any).  The rule parameters are in the context's context dictionary as
+    a dictionary entry under the name of RULE_PARAMETERS
     '''
 
     def __init__(self, rule: models.Rule, task: models.Task):
@@ -124,9 +147,10 @@ class Rule(TaskMessaging):
         self.db_rule = rule
         self.db_task = task
         super().__init__(self.db_task)
-        self.steps = self._load_steps()
-        self.context = {p.name: p.value for p in
+        self.context = RuleContext(rule.name)
+        self.context.context['RULE_PARAMETERS'] = {p.name: p.value for p in
                         self.db_rule.ruleparameter_set.all()}
+        self.steps = self._load_steps()
 
     def execute(self, data):
         '''
@@ -147,8 +171,14 @@ class Rule(TaskMessaging):
                     'steps configured.' % self.db_rule.name
                 )
             for number, step in self.steps.items():
+                # execute each step in order
                 logger.debug('Executing step %s.', number)
-                data = step.execute(data, self.context)
+                try:
+                    data = step.execute(data, self.context)
+                except:
+                    # try to clean up and then raise the original exception
+                    self._on_step_failure(step)
+                    raise
         except Exception:
             # make sure error info is routed into the TaskMessage
             # execution messages
@@ -157,6 +187,20 @@ class Rule(TaskMessaging):
             self.error('Could not execute the rule.')
             self.error(data)
             logger.exception('Failed task execution.')
+            raise
+
+    def _on_step_failure(self, step):
+        '''
+        If a step fails, it has a last chance to make things right and
+        do any cleanup, etc...this is called when a failure occurs.
+        :param data: The data the step failed to process
+        :param step: The step that failed.
+        '''
+        try:
+            self.error('Performing step failure routine.')
+            step.on_failure()
+        except Exception:
+            self.error('Step\'s on failure routine failed!')
             raise
 
     def _load_steps(self):
@@ -206,7 +250,7 @@ class Rule(TaskMessaging):
         params = {p.name: p.value
                   for p in db_step.stepparameter_set.all()}
         self.info('Step loaded successfully.')
-        return step(params, self.db_task)
+        return step(self.db_task, self.context, **params)
 
     def _step_import(self, step_name: str):
         '''
@@ -218,23 +262,6 @@ class Rule(TaskMessaging):
         module = importlib.import_module(components[0])
         step = getattr(module, components[1])
         return step
-
-    @abstractmethod
-    def on_success(self, data, context: dict):
-        '''
-        Implement this to handle a successful execution.
-        :param data: The data that was handled
-        :param context: The state of the context after processing.
-        '''
-        pass
-
-    def on_failure(self, data, context: dict):
-        '''
-        Implement to handle any failed rules for post processing/cleanup.
-        :param data: The data that was passed in.
-        :param context: The rule context dict.
-        '''
-        pass
 
     class StepNotFound(Exception):
         '''
@@ -292,7 +319,8 @@ class Step(TaskMessaging, metaclass=ABCMeta):
     steps.
     '''
 
-    def __init__(self, db_task: models.Task, **kwargs):
+    def __init__(self, db_task: models.Task, rule_context:RuleContext,
+                 **kwargs):
         '''
         Any parameters loaded from the database will be sent
         via the **kwargs keyword arguments parameter.
@@ -341,12 +369,23 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         '''
         ret = self.parameters.get(parameter_name, None)
         if not ret and raise_exception == True:
-            raise self.ParameterNotFoundError('Parameter with name %s could '
-                                              'not be found in the parameters'
-                                              'list.  Make sure this parameter'
-                                              'is configured in the Step\'s '
-                                              'parameters settings.')
+            raise self.ParameterNotFoundError(
+                'Parameter with name %s could '
+                'not be found in the parameters'
+                'list.  Make sure this parameter'
+                ' is configured in the Step\'s '
+                'parameters settings.' % parameter_name
+            )
         return ret
+
+    @abstractmethod
+    def on_failure(self):
+        '''
+        Implement to handle any failed steps for post processing/cleanup.
+        :param data: The data that was passed in.
+        :param context: The rule context dict.
+        '''
+        pass
 
     class ParameterNotFoundError(Exception):
         '''

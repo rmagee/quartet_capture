@@ -25,7 +25,6 @@ import time
 logger = getLogger('quartet_capture')
 
 
-@shared_task(name='execute_rule')
 def execute_rule(message: str, db_task: DBTask):
     '''
     When a message arrives, creates a record of the message and parses
