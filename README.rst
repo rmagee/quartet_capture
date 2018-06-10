@@ -7,6 +7,9 @@ QU4TET CAPTURE
 
 .. image:: https://gitlab.com/serial-lab/quartet_capture/badges/master/coverage.svg
         :target: https://gitlab.com/serial-lab/quartet_capture/pipelines
+        
+.. image:: https://badge.fury.io/py/quartet_capture.svg
+    :target: https://badge.fury.io/py/quartet_capture
 
 .. code-block::text
 
