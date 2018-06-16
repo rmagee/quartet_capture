@@ -250,7 +250,7 @@ class Rule(TaskMessaging):
         params = {p.name: p.value
                   for p in db_step.stepparameter_set.all()}
         self.info('Step loaded successfully.')
-        return step(self.db_task, self.context, **params)
+        return step(self.db_task, **params)
 
     def _step_import(self, step_name: str):
         '''
@@ -319,8 +319,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
     steps.
     '''
 
-    def __init__(self, db_task: models.Task, rule_context:RuleContext,
-                 **kwargs):
+    def __init__(self, db_task: models.Task, **kwargs):
         '''
         Any parameters loaded from the database will be sent
         via the **kwargs keyword arguments parameter.
@@ -341,7 +340,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         return self._declared_parameters
 
     @abstractmethod
-    def execute(self, data, rule_context: dict):
+    def execute(self, data, rule_context: RuleContext):
         '''
         Implement this to handle the inbound data.  Modify data if you
         want subsequent steps to handle a modified version of the
