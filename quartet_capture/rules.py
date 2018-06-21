@@ -52,8 +52,8 @@ class TaskMessaging:
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task or self.task,
-                                  TaskMessageLevel.DEBUG)
+        self._create_task_message(message, task=task or self.task,
+                                  level=TaskMessageLevel.DEBUG)
 
     def info(self, message: str, task: models.Task = None):
         '''
@@ -61,7 +61,7 @@ class TaskMessaging:
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task)
+        self._create_task_message(message, task=task)
 
     def warning(self, message: str, task: models.Task = None):
         '''
@@ -69,7 +69,8 @@ class TaskMessaging:
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task, TaskMessageLevel.WARNING)
+        self._create_task_message(message, task=task,
+                                  level=TaskMessageLevel.WARNING)
 
     def error(self, message: str, task: models.Task = None):
         '''
@@ -77,13 +78,14 @@ class TaskMessaging:
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task, TaskMessageLevel.ERROR)
+        self._create_task_message(message, task=task,
+                                  level=TaskMessageLevel.ERROR)
 
     def _create_task_message(
         self,
-        message: str,
+        *args: object,
         task: models.Task = None,
-        level: TaskMessageLevel = TaskMessageLevel.INFO,
+        level: TaskMessageLevel = TaskMessageLevel.INFO
     ):
         '''
         Creates a TaskMessage model instance and saves it.
@@ -91,6 +93,10 @@ class TaskMessaging:
         :param task: The associated task.
         :param level: The severity of the message.
         '''
+        if len(args) > 1:
+            message = args[0] % tuple(args[1:])
+        else:
+            message = args[0]
         try:
             if not (task or self.task):
                 raise models.Task.DoesNotExist('No task was supplied.')
@@ -111,6 +117,7 @@ class RuleContext:
 
     def __init__(self, rule_name, context: dict = {}):
         self._context = context
+        self._rule_name = rule_name
 
     @property
     def context(self):
@@ -119,6 +126,14 @@ class RuleContext:
     @context.setter
     def context(self, value):
         self._context = value
+
+    @property
+    def rule_name(self):
+        return self._rule_name
+
+    @rule_name.setter
+    def rule_name(self, value):
+        self._rule_name = value
 
 
 class Rule(TaskMessaging):
@@ -149,7 +164,7 @@ class Rule(TaskMessaging):
         super().__init__(self.db_task)
         self.context = RuleContext(rule.name)
         self.context.context['RULE_PARAMETERS'] = {p.name: p.value for p in
-                        self.db_rule.ruleparameter_set.all()}
+                                                   self.db_rule.ruleparameter_set.all()}
         self.steps = self._load_steps()
 
     def execute(self, data):
