@@ -13,3 +13,4 @@ djangorestframework
 lxml
 haikunator
 django-filter
+python-dateutil
