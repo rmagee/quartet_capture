@@ -7,11 +7,11 @@ QU4TET CAPTURE
 
 .. image:: https://gitlab.com/serial-lab/quartet_capture/badges/master/coverage.svg
         :target: https://gitlab.com/serial-lab/quartet_capture/pipelines
-        
+
 .. image:: https://badge.fury.io/py/quartet_capture.svg
     :target: https://badge.fury.io/py/quartet_capture
 
-.. code-block::text
+.. code-block:: text
 
          .d8888b.      d8888  8888888b. 88888888888 888     888 8888888b.  8888888888
         d88P  Y88b    d8P888  888   Y88b    888     888     888 888   Y88b 888
@@ -39,13 +39,13 @@ Quickstart
 
 Install quartet_capture
 
-.. code-block::text
+.. code-block:: text
 
     pip install quartet_capture
 
 Add it to your `INSTALLED_APPS`:
 
-.. code-block::text
+.. code-block:: text
 
     INSTALLED_APPS = (
         ...
@@ -55,7 +55,7 @@ Add it to your `INSTALLED_APPS`:
 
 Add quartet_capture's URL patterns:
 
-.. code-block::text
+.. code-block:: text
 
     from quartet_capture import urls as quartet_capture_urls
 
@@ -75,7 +75,7 @@ Features
 Running The Unit Tests
 ======================
 
-.. code-block::text
+.. code-block:: text
 
     source <YOURVIRTUALENV>/bin/activate
     (myenv) $ python runtests.py
