@@ -82,11 +82,11 @@ class TestQuartet_capture(TestCase):
         task.status='RUNNING'
         task.rule=rule
         task.save()
-        tm = TaskMessaging()
-        tm.debug('This is a debugmessage', task)
-        tm.info('This is an info message', task)
-        tm.warning('This is a warning!', task)
-        tm.error('This is an error!!!', task)
+        tm = TaskMessaging(task=task)
+        tm.debug('This is a debugmessage')
+        tm.info('This is an info message')
+        tm.warning('This is a warning!')
+        tm.error('This is an error!!!')
 
     def tearDown(self):
         pass
