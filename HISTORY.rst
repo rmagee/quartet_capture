@@ -23,7 +23,13 @@ Improved rule context handling for steps.  The RuleContext class was
 added instead of using a dictionary, the context is now a first-class citizen
 in the step/rule framework.
 
-1.0.13 to 1.0.14
+1.0.13 to 1.0.17
 ++++++++++++++++
 Added a new dependency for the unit tests supporting the `quartet_epcis`
 module.  Also fixed an exception test in the unit tests.
+
+Added the ability to send multiple string arguments to the TaskMessaging
+mixin helpers using commas instead of having to manually concatenate. Similar
+to python logging calls.
+
+Some patches were to get the readme file to display correctly in PyPI.

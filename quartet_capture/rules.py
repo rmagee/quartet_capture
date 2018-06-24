@@ -46,39 +46,39 @@ class TaskMessaging:
         '''
         self.task = task
 
-    def debug(self, message: str, task: models.Task = None):
+    def debug(self, *args: object, task: models.Task = None):
         '''
         Creates a debug message.
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task=task or self.task,
+        self._create_task_message(*args, task=task or self.task,
                                   level=TaskMessageLevel.DEBUG)
 
-    def info(self, message: str, task: models.Task = None):
+    def info(self, *args: object, task: models.Task = None):
         '''
         Creates an info message.
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task=task)
+        self._create_task_message(*args, task=task)
 
-    def warning(self, message: str, task: models.Task = None):
+    def warning(self, *args: object, task: models.Task = None):
         '''
         Creates a warning message.
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task=task,
+        self._create_task_message(*args, task=task,
                                   level=TaskMessageLevel.WARNING)
 
-    def error(self, message: str, task: models.Task = None):
+    def error(self, *args: object, task: models.Task = None):
         '''
         Creates an error message.
         :param message: The message to store.
         :param task: The associated task.
         '''
-        self._create_task_message(message, task=task,
+        self._create_task_message(*args, task=task,
                                   level=TaskMessageLevel.ERROR)
 
     def _create_task_message(
