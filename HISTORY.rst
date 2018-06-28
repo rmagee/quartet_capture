@@ -35,3 +35,6 @@ to python logging calls.
 Some patches were to get the readme file to display correctly in PyPI.
 
 Added sorting for steps.  Sorting was not being handled by the order parameter.
+
+Added a `get_boolean_parameter` helper function to the base `rules.Step`
+class.
