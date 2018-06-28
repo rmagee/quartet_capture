@@ -226,6 +226,7 @@ class Step(models.Model):
         verbose_name = _('Step')
         unique_together = ('name', 'rule', 'order')
         app_label = 'quartet_capture'
+        ordering = ['order']
 
 
 class StepParameter(Field):

@@ -17,7 +17,6 @@ from logging import getLogger
 from django.utils.timezone import datetime
 from django.core.files.storage import get_storage_class
 from celery import shared_task
-from quartet_capture.models import Rule as DBRule
 from quartet_capture.models import Task as DBTask
 from quartet_capture.rules import Rule
 import time
@@ -35,6 +34,8 @@ def execute_rule(message: str, db_task: DBTask):
     c_rule = Rule(db_task.rule, db_task)
     # execute the rule
     c_rule.execute(message)
+    # return the context
+    return c_rule.context
 
 
 @shared_task(name='execute_queued_task')

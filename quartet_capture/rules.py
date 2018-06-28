@@ -116,7 +116,7 @@ class RuleContext:
     '''
 
     def __init__(self, rule_name, context: dict = {}):
-        self._context = context
+        self.context = context
         self._rule_name = rule_name
 
     @property
@@ -189,7 +189,7 @@ class Rule(TaskMessaging):
                 # execute each step in order
                 logger.debug('Executing step %s.', number)
                 try:
-                    data = step.execute(data, self.context)
+                    step.execute(data, self.context)
                 except:
                     # try to clean up and then raise the original exception
                     self._on_step_failure(step)
@@ -372,16 +372,23 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         pass
 
     def get_parameter(self, parameter_name: str,
+                      default: str = None,
                       raise_exception: bool = False):
         '''
         A helper function that looks
         at the local parameters dict and returns a parameter value
-        or None if it does not exist.
+        or the value of the default parameter if it does not exist.  To
+        make finding the parameter required and to raise an exception if it
+        is not found, set the `raise_exception` parameter to `True`.
         :param parameter_name: The name of the parameter from which the value
         should be obtained.
+        :param default: If the parameter is not found, return this value-
+        default is None.
+        :param raise_exception: Whether or not to raise an Exception if
+        the value is not found.
         :return: The value of the parameter.
         '''
-        ret = self.parameters.get(parameter_name, None)
+        ret = self.parameters.get(parameter_name, default)
         if not ret and raise_exception == True:
             raise self.ParameterNotFoundError(
                 'Parameter with name %s could '
@@ -391,6 +398,31 @@ class Step(TaskMessaging, metaclass=ABCMeta):
                 'parameters settings.' % parameter_name
             )
         return ret
+
+    def get_boolean_parameter(self, parameter_name: str,
+                              default: bool = False,
+                              raise_exception: bool = False):
+        '''
+        A helper function that will convert a boolean parameter value from
+        the string stored into the database into a valid python bool.  Any
+        of the following parameter values will result in a `True` result:
+        * True
+        * true
+        * 1
+        * Any capital/lower variation of the word True- i.e., trUe.
+        :param parameter_name: The name of the parameter from which the value
+        should be obtained.
+        :param default: If the parameter is not found, return this value-
+        default is None.
+        :param raise_exception: Whether or not to raise an Exception if
+        the value is not found.
+        :return: The value of the parameter.
+        '''
+        ret = False
+        val = self.get_parameter(parameter_name, default, raise_exception)
+        if isinstance(val, str):
+            ret = val.lower() in ['true', '1']
+        return ret or default
 
     @abstractmethod
     def on_failure(self):
