@@ -23,7 +23,7 @@ Improved rule context handling for steps.  The RuleContext class was
 added instead of using a dictionary, the context is now a first-class citizen
 in the step/rule framework.
 
-1.0.13 to 1.0.17
+1.0.13 to 1.0.18
 ++++++++++++++++
 Added a new dependency for the unit tests supporting the `quartet_epcis`
 module.  Also fixed an exception test in the unit tests.
@@ -33,3 +33,5 @@ mixin helpers using commas instead of having to manually concatenate. Similar
 to python logging calls.
 
 Some patches were to get the readme file to display correctly in PyPI.
+
+Added sorting for steps.  Sorting was not being handled by the order parameter.
