@@ -62,14 +62,21 @@ class Task(utils.StatusModel):
         verbose_name=_('Rule'),
         on_delete=models.CASCADE
     )
-    STATUS = Choices('RUNNING', 'FINISHED', 'WAITING', 'FAILED')
-
+    STATUS = Choices('RUNNING', 'FINISHED', 'WAITING', 'FAILED', 'QUEUED')
+    type = models.CharField(
+        max_length=20,
+        verbose_name=_("Type"),
+        help_text=_("The type of task.  Default is 'Input'.  The task type"
+                    " is the responsibility of the component queuing/creating"
+                    " the task."),
+        null=False,
+        default='Input'
+    )
     execution_time = models.PositiveIntegerField(
         default=0,
         help_text=_('The time (in seconds) it took for this task to execute.'),
         verbose_name=_('Execution Time'),
     )
-
 
 class TaskMessage(models.Model):
     '''
@@ -100,7 +107,6 @@ class TaskMessage(models.Model):
         null=False
     )
 
-
 class Field(models.Model):
     '''
     An abstract name/value pair model
@@ -129,6 +135,26 @@ class Field(models.Model):
     class Meta:
         abstract = True
         app_label = 'quartet_capture'
+
+class TaskParameter(Field):
+    '''
+    Fields associated with Tasks.
+    '''
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        null=False,
+        help_text=_('A field associted with a given task.  Fields are passed'
+                    ' into task instances when they are dynamically created'
+                    ' as variables.'),
+        verbose_name=_('Task')
+    )
+
+    class Meta:
+        verbose_name = _('Task Parameter')
+        unique_together = ('name', 'task')
+        app_label = 'quartet_capture'
+
 
 
 class Rule(models.Model):

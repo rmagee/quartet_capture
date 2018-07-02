@@ -13,13 +13,13 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
-import sys
 import traceback
 import logging
 import importlib
+from datetime import datetime
 from enum import Enum
 from abc import ABCMeta, abstractmethod
-from quartet_capture import models
+from quartet_capture import models, errors
 from pydoc import locate
 from django.utils.translation import gettext as _
 
@@ -115,9 +115,42 @@ class RuleContext:
     used by steps to pass data to and from one another.
     '''
 
-    def __init__(self, rule_name, context: dict = {}):
+    def __init__(self, rule_name: str, task_name: str, context: dict = {}):
+        '''
+        Initializes a new RuleContext.
+        :param rule_name: The name of the current rule.
+        :param task_name: The name of the current task.
+        :param context: A dictionary for use by steps to communicate data.
+        '''
         self.context = context
         self._rule_name = rule_name
+        self._task_name = task_name
+
+    def get_required_context_variable(self, key: str):
+        '''
+        Returns a required context variable from the context dictionary by
+        key or throws a BaseCaptureError.
+        :param key: The key to utilize for the lookup.
+        :return: The value found in the context dictionary.
+        '''
+        ret = self.context.get(key)
+        if not ret:
+            raise errors.ExpectedContextVariableError(
+                _('The context variable with key %s could not be located '
+                  'in the rule context.  This typically indicates that an '
+                  'expected upstream step has not behaved properly and '
+                  'populated the context with the expeted data.  Check '
+                  'your rule configuration.'), key
+            )
+        return ret
+
+    @property
+    def task_name(self):
+        return self._task_name
+
+    @task_name.setter
+    def task_name(self, value):
+        self._task_name = value
 
     @property
     def context(self):
@@ -159,10 +192,11 @@ class Rule(TaskMessaging):
         them into memory for execution.
         :param rule: The django models.Rule instance.
         '''
+        self.start_time = datetime.utcnow()
         self.db_rule = rule
         self.db_task = task
         super().__init__(self.db_task)
-        self.context = RuleContext(rule.name)
+        self.context = RuleContext(rule.name, task.name)
         self.context.context['RULE_PARAMETERS'] = {p.name: p.value for p in
                                                    self.db_rule.ruleparameter_set.all()}
         self.steps = self._load_steps()
@@ -203,6 +237,11 @@ class Rule(TaskMessaging):
             self.error(data)
             logger.exception('Failed task execution.')
             raise
+        finally:
+            # set the total time in seconds that it took for this task
+            # to process the data using the rule
+            total_time = datetime.utcnow() - self.start_time
+            self.db_task.execution_time = total_time.total_seconds()
 
     def _on_step_failure(self, step):
         '''
@@ -423,6 +462,29 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         if isinstance(val, str):
             ret = val.lower() in ['true', '1']
         return ret or default
+
+    def get_or_create_parameter(self, step: models.Step, name: str,
+                                default: str,
+                                description: str = 'Default value.'):
+        '''
+        Gets or creates the parameter with *name*.  Returns the existing
+        value if the parameter exists or creates the new one with value
+        *default* and returns that.
+        :param name: The name of the parameter.
+        :param default: The value to add if creating a new parameter.
+        :param description: The description to add.
+        :return: The value of the parameter.
+        '''
+        try:
+            param = models.StepParameter.objects.get(name=name)
+        except models.StepParameter.DoesNotExist:
+            param = models.StepParameter.objects.create(
+                name=name,
+                value=default,
+                step=step,
+                description=description
+            )
+        return param.value
 
     @abstractmethod
     def on_failure(self):
