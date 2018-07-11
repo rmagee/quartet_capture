@@ -383,6 +383,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         super().__init__(db_task)
         self.parameters = kwargs or {}
         self._declared_parameters = {}
+        self._check_parameters(self.parameters, self._declared_parameters)
 
     @property
     @abstractmethod
@@ -494,6 +495,16 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         :param context: The rule context dict.
         '''
         pass
+
+    def _check_parameters(self, declared:dict, parameters:dict):
+        for parameter in parameters.keys():
+            if not declared.get(parameter):
+                raise self.ParameterNotFoundError(
+                    _('A parameter with name %s was found in the parameters '
+                      'collection.  This parameter is not valid for this '
+                      'step. This step will accept the following parameters: '
+                      '%s' % (parameter, parameters.keys()))
+                )
 
     class ParameterNotFoundError(Exception):
         '''
