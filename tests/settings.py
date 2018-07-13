@@ -55,9 +55,9 @@ else:
     MIDDLEWARE_CLASSES = ()
 
 MEDIA_ROOT='/tmp/'
-
-import logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    handlers=[logging.StreamHandler()]
-)
+#
+# import logging
+# logging.basicConfig(
+#     level=logging.DEBUG,
+#     handlers=[logging.StreamHandler()]
+# )
