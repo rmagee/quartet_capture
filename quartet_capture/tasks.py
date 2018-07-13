@@ -51,7 +51,7 @@ def execute_queued_task(task_name: str, user: User=None):
     :param message: The message to queue.
     '''
     db_task = DBTask.objects.get(name=task_name)
-    if user.id:
+    if user and user.id:
         TaskHistory.objects.create(task=db_task, user=user)
     try:
         start = time.time()
