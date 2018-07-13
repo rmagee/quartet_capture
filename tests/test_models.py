@@ -32,6 +32,7 @@ class TestQuartet_capture(TestCase):
         pass
 
     def test_epcis_rule(self):
+        print('test_epcis_rule')
         # create a new rule and give it a test parameter
         db_task = self._create_task()
         db_rule = db_task.rule
@@ -42,6 +43,7 @@ class TestQuartet_capture(TestCase):
         rule.execute(data)
 
     def test_data_loader(self):
+        print('test_data_loader')
         load_data()
 
     def _create_rule(self):
@@ -76,6 +78,7 @@ class TestQuartet_capture(TestCase):
         return f.read().encode()
 
     def test_task_messages(self):
+        print("test_task_message")
         rule = self._create_rule()
         task = models.Task()
         task.name='Test task'
