@@ -15,7 +15,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from model_utils import models as utils
 from model_utils import Choices
@@ -79,6 +79,7 @@ class Task(utils.StatusModel):
         verbose_name=_('Execution Time'),
     )
 
+
 class TaskMessage(models.Model):
     '''
     A message relative to the execution of a specific task.
@@ -107,6 +108,7 @@ class TaskMessage(models.Model):
         help_text=_("The message data."),
         null=False
     )
+
 
 class Field(models.Model):
     '''
@@ -137,6 +139,7 @@ class Field(models.Model):
         abstract = True
         app_label = 'quartet_capture'
 
+
 class TaskParameter(Field):
     '''
     Fields associated with Tasks.
@@ -156,6 +159,24 @@ class TaskParameter(Field):
         unique_together = ('name', 'task')
         app_label = 'quartet_capture'
 
+
+class TaskHistory(utils.TimeStampedModel):
+    """
+    Keeps a history of each time a task is created, executed, etc.
+    """
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        verbose_name=_("Task"),
+        help_text=_("The related Task."),
+        null=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        verbose_name=_("User"),
+        help_text=_("The user that created or ran the task."),
+        null=True
+    )
 
 
 class Rule(models.Model):

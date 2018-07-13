@@ -60,3 +60,12 @@ class TaskSerializer(ModelSerializer):
     class Meta:
         model = models.Task
         fields = '__all__'
+
+class TaskHistorySerializer(ModelSerializer):
+    '''
+    Default serializer for the TaskHistory model.
+    '''
+    class Meta:
+        model = models.TaskHistory
+        fields = '__all__'
+

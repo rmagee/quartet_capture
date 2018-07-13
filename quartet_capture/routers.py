@@ -13,7 +13,7 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 from rest_framework.routers import DefaultRouter
-from quartet_capture import viewsets
+from quartet_capture import viewsets, views
 
 router = DefaultRouter()
 router.register(r'rules', viewsets.RuleViewSet, base_name='rules')
@@ -23,4 +23,6 @@ router.register(r'steps', viewsets.StepViewSet, base_name='steps')
 router.register(r'step-parameters', viewsets.StepParameterViewSet,
                 base_name='step-parameters')
 router.register(r'tasks', viewsets.TaskViewset, base_name='tasks')
+router.register(r'task-history', viewsets.TaskHistoryViewSet,
+                base_name='task-history')
 urlpatterns = router.urls

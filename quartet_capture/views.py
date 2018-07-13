@@ -30,6 +30,33 @@ import logging
 logger = logging.getLogger('quartet_capture')
 
 
+class ExcuteTaskView(APIView):
+    """
+    Will, by task name, execute a given task.  This can be useful if a task
+    was queued and never started due to the Celery task queue being unavailable
+    or if, for whatever reason, a task failed and needs to be re-executed.
+
+    Usage:
+
+        http[s]://[host]:[port]/capture/execute/?task-name=[task name]
+
+    """
+
+    def get(self, request: Request, task_name: str = None, format=None):
+        if task_name:
+            run = request.query_params.get('run-immediately', False)
+            if run:
+                # create a task and queue it for processing - returns the task name
+                execute_queued_task(task_name=task_name)
+            else:
+                execute_queued_task.delay(task_name=task_name)
+            ret = Response(
+                'Task %s has been re-queued for execution.' % task_name)
+        else:
+            ret = Response()
+        return ret
+
+
 class CaptureInterface(APIView):
     '''
     The view responsible for capturing the files and handing
@@ -82,9 +109,9 @@ class CaptureInterface(APIView):
 
         if run:
             # create a task and queue it for processing - returns the task name
-            execute_queued_task(task_name=ret)
+            execute_queued_task(task_name=ret, user=request.user)
         else:
-            execute_queued_task.delay(task_name=ret)
+            execute_queued_task.delay(task_name=ret, user=request.user)
 
         return Response(ret, status=status.HTTP_201_CREATED)
 

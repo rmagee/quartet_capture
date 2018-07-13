@@ -27,7 +27,13 @@ urlpatterns = [
         name='quartet-capture'),
     url(r'^epcis-capture/$',
         views.EPCISCapture.as_view(),
-        name='epcis-capture')
+        name='epcis-capture'),
+    url(r'^execute/$',
+        views.ExcuteTaskView.as_view(),
+        name='execute'),
+    url(r'^execute/(?P<task_name>[a-z]*-[a-z]*-[a-f,0-9]*)/?$',
+        views.ExcuteTaskView.as_view(),
+        name='execute-task')
 ]
 
 urlpatterns += route_patterns

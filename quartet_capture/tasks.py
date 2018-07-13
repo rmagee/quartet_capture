@@ -16,12 +16,13 @@ from __future__ import absolute_import, unicode_literals
 import io
 from logging import getLogger
 from django.db import transaction
+from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from django.utils.timezone import datetime
 from django.core.files.storage import get_storage_class
 from celery import shared_task
 from quartet_capture.errors import RuleNotFound
-from quartet_capture.models import Task as DBTask, Rule as DBRule
+from quartet_capture.models import Task as DBTask, Rule as DBRule, TaskHistory
 from quartet_capture.rules import Rule
 import time
 
@@ -43,13 +44,15 @@ def execute_rule(message: bytes, db_task: DBTask):
 
 
 @shared_task(name='execute_queued_task')
-def execute_queued_task(task_name: str):
+def execute_queued_task(task_name: str, user: User=None):
     '''
     Queues up a rule for execution by saving the file to file storage
     and putting the descriptor and rule name on a queue.
     :param message: The message to queue.
     '''
     db_task = DBTask.objects.get(name=task_name)
+    if user.id:
+        TaskHistory.objects.create(task=db_task, user=user)
     try:
         start = time.time()
         logger.debug('Running task %s', db_task.name)

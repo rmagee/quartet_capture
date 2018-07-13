@@ -51,3 +51,10 @@ class TaskViewset(viewsets.ModelViewSet):
     queryset = models.Task.objects.all()
     serializer_class = serializers.TaskSerializer
     search_fields = ['name', 'status', 'status_changed']
+
+class TaskHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    '''
+    CRUD ready model view for the TaskHistory model.
+    '''
+    queryset = models.TaskHistory.objects.all()
+    serializer_class = serializers.TaskHistorySerializer
