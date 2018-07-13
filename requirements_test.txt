@@ -14,3 +14,6 @@ lxml
 haikunator
 django-filter
 python-dateutil
+epcpyyes
+eparsecis
+quartet_epcis

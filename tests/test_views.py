@@ -31,6 +31,7 @@ class ViewTest(APITestCase):
     '''
 
     def test_data(self):
+        print('running test_data')
         self._create_rule()
         url = reverse('quartet-capture')
         data = self._get_test_data()
@@ -39,6 +40,7 @@ class ViewTest(APITestCase):
                          format='multipart')
 
     def test_epcis(self):
+        print('running test_epcis')
         self._create_rule()
         url = reverse('epcis-capture')
         data = self._get_test_data()
@@ -48,6 +50,7 @@ class ViewTest(APITestCase):
             format='multipart')
 
     def test_task_api(self):
+        print('running test_task_api')
         self._create_rule()
         url = reverse('epcis-capture')
         data = self._get_test_data()
@@ -57,6 +60,7 @@ class ViewTest(APITestCase):
             format='multipart')
 
     def test_task_execute_api(self):
+        print('running test_task_execute_api')
         self._create_rule()
         url = reverse('epcis-capture')
         data = self._get_test_data()
