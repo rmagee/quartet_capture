@@ -59,22 +59,22 @@ class ViewTest(APITestCase):
             {'file': data},
             format='multipart')
 
-    def test_task_execute_api(self):
-        print('running test_task_execute_api')
-        self._create_rule()
-        url = reverse('epcis-capture')
-        data = self._get_test_data()
-        ret = self.client.post(
-            '{0}?rule=epcis&run-immediately=true'.format(url),
-            {'file': data},
-            format='multipart')
-        task_name = ret.data
-        url = reverse('execute-task',kwargs={'task_name':task_name})
-        ret = self.client.get(
-            url
-        )
-        self.assertEqual('Task %s has been re-queued for execution.' %
-                         task_name, ret.data)
+    # def test_task_execute_api(self):
+    #     print('running test_task_execute_api')
+    #     self._create_rule()
+    #     url = reverse('epcis-capture')
+    #     data = self._get_test_data()
+    #     ret = self.client.post(
+    #         '{0}?rule=epcis&run-immediately=true'.format(url),
+    #         {'file': data},
+    #         format='multipart')
+    #     task_name = ret.data
+    #     url = reverse('execute-task',kwargs={'task_name':task_name})
+    #     ret = self.client.get(
+    #         url
+    #     )
+    #     self.assertEqual('Task %s has been re-queued for execution.' %
+    #                      task_name, ret.data)
 
 
     def _get_test_data(self):
