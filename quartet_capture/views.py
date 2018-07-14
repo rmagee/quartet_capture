@@ -94,7 +94,7 @@ class CaptureInterface(APIView):
         # get the message from the request
         message = request.FILES.get('file') or request.POST.get('file')
         if not message:
-            raise exceptions.APIException(
+            raise exceptions.ParseError(
                 'No "file" field variable found in the HTTP POST data.  The '
                 'multiform data must be posted with the name "file" as '
                 'it\'s variable name.',
@@ -160,7 +160,7 @@ class EPCISCapture(CaptureInterface):
         if message and not isinstance(message, str):
             message = message.read()
         if 'EPCISDocument' not in message:
-            raise status.HTTP_400_BAD_REQUEST(
+            raise exceptions.ParseError(
                 'The EPCIS capture interface '
                 'is for EPCIS Documents only. To submit other '
                 'types of data use the quartet-capture '

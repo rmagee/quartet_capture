@@ -311,11 +311,17 @@ class Rule(TaskMessaging):
         Called if _load_step fails as a backup.
         :return: A Step instance.
         '''
-        components = step_name.rsplit('.', 1)
-        logger.debug('components = %s', components)
-        module = importlib.import_module(components[0])
-        step = getattr(module, components[1])
-        return step
+        try:
+            components = step_name.rsplit('.', 1)
+            logger.debug('components = %s', components)
+            module = importlib.import_module(components[0])
+            step = getattr(module, components[1])
+            return step
+        except (ImportError, AttributeError, ModuleNotFoundError):
+            logger.exception('Could not load step %s', step_name)
+            tb = traceback.format_exc()
+            self.error(tb)
+
 
     class StepNotFound(Exception):
         '''
@@ -330,32 +336,6 @@ class Rule(TaskMessaging):
         by the Rule during initialization.
         '''
         pass
-
-
-class Parameter(metaclass=ABCMeta):
-    '''
-    Defines a parameter for Steps.  Steps can declare their parameters
-    and validate them when executing (both optional).
-    '''
-
-    def __init__(self,
-                 datatype: type,
-                 name: str,
-                 regex_pattern: str,
-                 description: str = None
-                 ):
-        '''
-        Initialize a parameter.
-        :param datatype: The expected datatype.
-        :param name: The name.
-        :param regex_pattern: A regex pattern to use to check against expected
-        values.
-        :param description: A description of the parameter and what it is for.
-        '''
-        self.type = type
-        self.name = name
-        self.description = description
-        self.regex_pattern = regex_pattern
 
 
 class Step(TaskMessaging, metaclass=ABCMeta):

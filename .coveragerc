@@ -1,11 +1,16 @@
 [run]
 branch = true
+source =
+    quartet_capture
 
 [report]
 omit =
     *site-packages*
     *tests*
     *.tox*
+    *errors.py
+    *permissions.py
 show_missing = True
 exclude_lines =
     raise NotImplementedError
+    def create_and_queue_task*
