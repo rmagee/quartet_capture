@@ -317,7 +317,7 @@ class Rule(TaskMessaging):
             module = importlib.import_module(components[0])
             step = getattr(module, components[1])
             return step
-        except (ImportError, AttributeError, ModuleNotFoundError):
+        except (ImportError, AttributeError):
             logger.exception('Could not load step %s', step_name)
             tb = traceback.format_exc()
             self.error(tb)
