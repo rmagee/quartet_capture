@@ -31,7 +31,6 @@ class ViewTest(APITestCase):
     '''
 
     def test_data(self):
-        print('running test_data')
         self._create_rule()
         url = reverse('quartet-capture')
         data = self._get_test_data()
@@ -40,7 +39,6 @@ class ViewTest(APITestCase):
                          format='multipart')
 
     def test_epcis(self):
-        print('running test_epcis')
         self._create_rule()
         url = reverse('epcis-capture')
         data = self._get_test_data()
@@ -50,7 +48,6 @@ class ViewTest(APITestCase):
             format='multipart')
 
     def test_no_data_epcis(self):
-        print('running test_epcis')
         self._create_rule()
         url = reverse('epcis-capture')
         data = ''
@@ -60,7 +57,6 @@ class ViewTest(APITestCase):
             format='multipart')
 
     def test_no_data_capture(self):
-        print('running test_data')
         self._create_rule()
         url = reverse('quartet-capture')
         data = ''
@@ -68,8 +64,21 @@ class ViewTest(APITestCase):
                          {'file': data},
                          format='multipart')
 
+    def test_execute_view(self):
+        self._create_rule()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post('{0}?rule=epcis&run-immediately=true'.format(url),
+                         {'file': data},
+                         format='multipart')
+        task_name = response.data
+        url = reverse('execute-task', kwargs = {"task_name":task_name})
+        ret = self.client.get(
+            '{0}/{1}/?run-immediately=true'.format(url, task_name)
+        )
+        print(ret)
+
     def test_no_rule_capture(self):
-        print('running test_data')
         self._create_rule()
         url = reverse('quartet-capture')
         data = ''
@@ -78,7 +87,6 @@ class ViewTest(APITestCase):
                          format='multipart')
 
     def test_task_api(self):
-        print('running test_task_api')
         self._create_rule()
         url = reverse('epcis-capture')
         data = self._get_test_data()
