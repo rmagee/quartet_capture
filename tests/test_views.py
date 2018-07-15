@@ -15,6 +15,8 @@
 import os
 import django
 
+from quartet_epcis.parsing.errors import InvalidAggregationEventError
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 django.setup()
 from rest_framework.test import APITestCase
@@ -73,10 +75,12 @@ class ViewTest(APITestCase):
                          format='multipart')
         task_name = response.data
         url = reverse('execute-task', kwargs = {"task_name":task_name})
-        ret = self.client.get(
-            '{0}/{1}/?run-immediately=true'.format(url, task_name)
-        )
-        print(ret)
+        with self.assertRaises(InvalidAggregationEventError):
+            self.client.get(
+                '{0}?run-immediately=true'.format(url)
+            )
+            # the restart should fail because it's repacking everything
+            # that was packed
 
     def test_no_rule_capture(self):
         self._create_rule()
