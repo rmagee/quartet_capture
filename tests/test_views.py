@@ -74,11 +74,11 @@ class ViewTest(APITestCase):
                          {'file': data},
                          format='multipart')
         task_name = response.data
-        url = reverse('execute-task', kwargs = {"task_name":task_name})
-        with self.assertRaises(InvalidAggregationEventError):
-            self.client.get(
+        url = reverse('execute-task', kwargs= {"task_name": task_name})
+        response = self.client.get(
                 '{0}?run-immediately=true'.format(url)
             )
+        self.assertEqual(response.status_code, 500)
             # the restart should fail because it's repacking everything
             # that was packed
 

@@ -112,16 +112,18 @@ class CaptureInterface(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
         # get the message from the request
-        if len(request.FILES) == 0:
+        files = request.FILES if len(request.FILES) > 0 else request.POST
+        if len(files) == 0:
             raise exceptions.APIException(
-                'No files were posted.', status=status.HTTP_400_BAD_REQUEST
+                'No files were posted.',
+                status.HTTP_400_BAD_REQUEST
             )
-        elif len(request.FILES) > 1:
+        elif len(files) > 1:
             raise exceptions.APIException(
                 'Only one file may be posted at a time.',
                 status.HTTP_400_BAD_REQUEST
             )
-        for file, message in request.FILES.items():
+        for file, message in files.items():
             if not message:
                 raise exceptions.ParseError(
                     'No "file" field variable found in the HTTP POST data.  The '
