@@ -21,11 +21,13 @@ class BaseCaptureError(Exception):
             message = args[0]
         super().__init__(message, **kwargs)
 
+
 class RuleNotFound(BaseCaptureError):
     '''
     Thrown if a rule can not be located to process a message.
     '''
     pass
+
 
 class ExpectedContextVariableError(BaseCaptureError):
     '''
@@ -33,8 +35,15 @@ class ExpectedContextVariableError(BaseCaptureError):
     '''
     pass
 
+
 class ExpectedTaskParameterError(BaseCaptureError):
     '''
     Thrown if the Rule Context does not contain an expected context variable.
     '''
+    pass
+
+class TaskExecutionError(BaseCaptureError):
+    """
+    Thrown when a task fails.
+    """
     pass

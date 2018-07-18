@@ -13,6 +13,8 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 import io
+from django.utils.translation import gettext as _
+from django.db import transaction
 from django.core.files import storage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
@@ -20,8 +22,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions
-from django.db import transaction
 
+from quartet_capture.errors import TaskExecutionError
 from quartet_capture.tasks import execute_queued_task
 from quartet_capture.models import Rule, Task
 
@@ -45,13 +47,31 @@ class ExcuteTaskView(APIView):
     def get(self, request: Request, task_name: str = None, format=None):
         if task_name:
             run = request.query_params.get('run-immediately', False)
-            if run:
-                # create a task and queue it for processing - returns the task name
-                execute_queued_task(task_name=task_name)
-            else:
-                execute_queued_task.delay(task_name=task_name)
-            ret = Response(
-                'Task %s has been re-queued for execution.' % task_name)
+            try:
+                if run:
+                    # create a task and queue it for processing - returns the task name
+                    execute_queued_task(task_name=task_name)
+                    task = Task.objects.get(task_name=task_name)
+                    if task.status == 'FAILED':
+                        raise TaskExecutionError()
+                else:
+                    execute_queued_task.delay(task_name=task_name)
+                ret = Response(
+                    _('Task %s has been re-queued for execution.') % task_name)
+            except TaskExecutionError:
+                ret = Response(
+                    _('Task %s has failed execution.') % task_name,
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            except Exception:
+                logger.error('There was an unexpected error executing the '
+                             'task')
+                ret = Response(
+                    'There was an unexpected error executing the '
+                    'task.  More info is available in the '
+                    'error log.',
+                    status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         else:
             ret = Response()
         return ret
@@ -92,28 +112,44 @@ class CaptureInterface(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
         # get the message from the request
-        message = request.FILES.get('file') or request.POST.get('file')
-        if not message:
-            raise exceptions.ParseError(
-                'No "file" field variable found in the HTTP POST data.  The '
-                'multiform data must be posted with the name "file" as '
-                'it\'s variable name.',
+        if len(request.FILES) == 0:
+            raise exceptions.APIException(
+                'No files were posted.', status=status.HTTP_400_BAD_REQUEST
+            )
+        elif len(request.FILES) > 1:
+            raise exceptions.APIException(
+                'Only one file may be posted at a time.',
                 status.HTTP_400_BAD_REQUEST
             )
-        # execute the rule as a task in celery
-        logger.debug('Executing rule %s', rule_name)
-        rule = self._rule_exists(rule_name)
-        storage_class = storage.get_storage_class()
-        django_storage = storage_class()
-        ret = self._queue_task(message, rule, django_storage)
+        for file, message in request.FILES.items():
+            if not message:
+                raise exceptions.ParseError(
+                    'No "file" field variable found in the HTTP POST data.  The '
+                    'multiform data must be posted with the name "file" as '
+                    'it\'s variable name.',
+                    status.HTTP_400_BAD_REQUEST
+                )
+            # execute the rule as a task in celery
+            logger.debug('Executing rule %s', rule_name)
+            rule = self._rule_exists(rule_name)
+            storage_class = storage.get_storage_class()
+            django_storage = storage_class()
+            # create a task and get the task name to return to the
+            # calling application
+            ret = self._queue_task(message, rule, django_storage)
+            # get a reference to the user id.
+            user = getattr(request, 'user', None)
+            if user:
+                user_id = user.id
+            else:
+                user_id = None
+            if run:
+                # create a task and queue it for processing - returns the task name
+                execute_queued_task(task_name=ret, user_id=user_id)
+            else:
+                execute_queued_task.delay(task_name=ret, user_id=user_id)
 
-        if run:
-            # create a task and queue it for processing - returns the task name
-            execute_queued_task(task_name=ret, user=request.user)
-        else:
-            execute_queued_task.delay(task_name=ret, user=request.user)
-
-        return Response(ret, status=status.HTTP_201_CREATED)
+            return Response(ret, status=status.HTTP_201_CREATED)
 
     def _rule_exists(self, rule_name):
         '''
@@ -124,7 +160,6 @@ class CaptureInterface(APIView):
         rule = Rule.objects.get(name=rule_name)
         return rule
 
-    @transaction.atomic
     def _queue_task(self, message, rule, file_store: storage.Storage):
         '''
         Saves the file using

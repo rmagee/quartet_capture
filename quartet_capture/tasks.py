@@ -31,6 +31,9 @@ logger = getLogger('quartet_capture')
 
 def execute_rule(message: bytes, db_task: DBTask):
     '''
+    Helper function that executes a rule inline and returns
+    the context.  The celery task below essentially does the same thing
+    without returning the rule context.
     When a message arrives, creates a record of the message and parses
     it using the appropriate parser.
     :param message_data: The data to be handled.
@@ -44,12 +47,16 @@ def execute_rule(message: bytes, db_task: DBTask):
 
 
 @shared_task(name='execute_queued_task')
-def execute_queued_task(task_name: str, user: User=None):
+def execute_queued_task(task_name: str, user_id: int = None):
     '''
     Queues up a rule for execution by saving the file to file storage
     and putting the descriptor and rule name on a queue.
     :param message: The message to queue.
     '''
+    if user_id:
+        user = User.objects.get(id=user_id)
+    else:
+        user = None
     db_task = DBTask.objects.get(name=task_name)
     if user and user.id:
         TaskHistory.objects.create(task=db_task, user=user)
@@ -63,23 +70,23 @@ def execute_queued_task(task_name: str, user: User=None):
         # load the message
         storage_class = get_storage_class()
         django_storage = storage_class()
-        message_file = django_storage.open(name='{0}.dat'.format(db_task.name))
+        message_file = django_storage.open(
+            name='{0}.dat'.format(db_task.name))
         data = message_file.read()
-        # call execute rule
-        execute_rule(data, db_task)
+        c_rule = Rule(db_task.rule, db_task)
+        # execute the rule
+        c_rule.execute(data)
         db_task.status = 'FINISHED'
     except Exception:
         logger.exception('Could not execute task with name %s', task_name)
         db_task.status = 'FAILED'
-        raise
+        db_task.save()
     finally:
         db_task.end = datetime.now()
         end = time.time()
         db_task.execution_time = (end - start)
         db_task.save()
 
-
-@transaction.atomic
 def create_and_queue_task(data, rule_name: str,
                           task_type: str = 'Input',
                           run_immediately: bool = False,

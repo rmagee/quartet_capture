@@ -14,6 +14,7 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
+from threading import Lock
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
@@ -23,15 +24,19 @@ from haikunator import Haikunator
 
 haiku = Haikunator()
 
-
 def haikunate():
     '''
     Since the haikunator is a class method
     it could not be used directly as a default callable for
     a django field...hence this function.
     '''
-    return haiku.haikunate(token_length=4, token_hex=True)
-
+    try:
+        lock = Lock()
+        lock.acquire()
+        ret = haiku.haikunate(token_length=8, token_hex=True)
+    finally:
+        lock.release()
+    return ret
 
 SEVERITY_CHOICES = (
     ('DEBUG', 'DEBUG'),

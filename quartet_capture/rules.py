@@ -22,7 +22,7 @@ from abc import ABCMeta, abstractmethod
 from quartet_capture import models, errors
 from pydoc import locate
 from django.utils.translation import gettext as _
-
+from django.db import transaction
 logger = logging.getLogger('quartet_capture')
 
 
@@ -115,14 +115,14 @@ class RuleContext:
     used by steps to pass data to and from one another.
     '''
 
-    def __init__(self, rule_name: str, task_name: str, context: dict = {}):
+    def __init__(self, rule_name: str, task_name: str, context: dict = None):
         '''
         Initializes a new RuleContext.
         :param rule_name: The name of the current rule.
         :param task_name: The name of the current task.
         :param context: A dictionary for use by steps to communicate data.
         '''
-        self.context = context
+        self.context = context or {}
         self._rule_name = rule_name
         self._task_name = task_name
 
@@ -219,29 +219,24 @@ class Rule(TaskMessaging):
                     'The rule %s was loaded with no '
                     'steps configured.' % self.db_rule.name
                 )
-            for number, step in self.steps.items():
-                # execute each step in order
-                logger.debug('Executing step %s.', number)
-                try:
-                    step.execute(data, self.context)
-                except:
-                    # try to clean up and then raise the original exception
-                    self._on_step_failure(step)
-                    raise
+            with transaction.atomic():
+                for number, step in self.steps.items():
+                    # execute each step in order
+                    logger.debug('Executing step %s.', number)
+                    try:
+                        new_data = step.execute(data, self.context)
+                        data = new_data or data
+                    except:
+                        # try to clean up and then raise the original exception
+                        self._on_step_failure(step)
+                        raise
         except Exception:
             # make sure error info is routed into the TaskMessage
             # execution messages
             # for this rule
             data = traceback.format_exc()
-            self.error('Could not execute the rule.')
-            self.error(data)
-            logger.exception('Failed task execution.')
+            self.error('Could not execute the rule.\r\n%s' % data)
             raise
-        finally:
-            # set the total time in seconds that it took for this task
-            # to process the data using the rule
-            total_time = datetime.utcnow() - self.start_time
-            self.db_task.execution_time = total_time.total_seconds()
 
     def _on_step_failure(self, step):
         '''
@@ -299,7 +294,7 @@ class Rule(TaskMessaging):
                     'The step %s could not be loaded. '
                     'make sure it and '
                     'any dependencies are on the PYTHONPATH '
-                    'and can be loaded.', db_step.step_class
+                    'and can be loaded.' % db_step.step_class
                 )
         params = {p.name: p.value
                   for p in db_step.stepparameter_set.all()}
