@@ -43,6 +43,7 @@ class ExcuteTaskView(APIView):
         http[s]://[host]:[port]/capture/execute/?task-name=[task name]
 
     """
+    queryset = Task.objects.none()
 
     def get(self, request: Request, task_name: str = None, format=None):
         if task_name:
@@ -95,6 +96,8 @@ class CaptureInterface(APIView):
     parser_classes = (MultiPartParser,)
     # this is the throttle scope for this view
     throttle_scope = 'capture_upload'
+    # sentry queryset for permissions
+    queryset = Task.objects.none()
 
     def post(self, request: Request, format=None):
         logger.info('Message from %s', getattr(request.META, 'REMOTE_HOST',
@@ -191,6 +194,7 @@ class EPCISCapture(CaptureInterface):
     A more strict implementation of the EPCIS capture interface to
     meet requirements in section 10.2 of the EPCIS 1.2 protocol.
     '''
+    queryset = Task.objects.none()
 
     def post(self, request: Request):
         message = request.FILES.get('file') or request.POST.get('file')
