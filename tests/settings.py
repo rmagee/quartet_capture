@@ -18,7 +18,6 @@ from __future__ import unicode_literals, absolute_import
 import os
 import django
 
-
 DEBUG = True
 USE_TZ = True
 
@@ -39,6 +38,13 @@ DATABASES = {
 # }
 ROOT_URLCONF = "tests.urls"
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.DjangoModelPermissions'
+    ),
+}
+
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -54,7 +60,7 @@ if django.VERSION >= (1, 10):
 else:
     MIDDLEWARE_CLASSES = ()
 
-MEDIA_ROOT='/tmp/'
+MEDIA_ROOT = '/tmp/'
 #
 # import logging
 # logging.basicConfig(

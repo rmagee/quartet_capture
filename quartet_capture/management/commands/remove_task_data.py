@@ -14,7 +14,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 from django.utils.translation import gettext as _
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from quartet_capture.models import Task, TaskHistory, TaskParameter
 
 

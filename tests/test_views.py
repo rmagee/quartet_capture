@@ -19,9 +19,12 @@ from quartet_epcis.parsing.errors import InvalidAggregationEventError
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 django.setup()
+from requests.auth import HTTPBasicAuth
 from rest_framework.test import APITestCase
 from django.urls import reverse
+from django.contrib.auth.models import Group, User
 from quartet_capture import models
+from quartet_capture.management.commands.create_capture_groups import Command
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 django.setup()
@@ -31,6 +34,16 @@ class ViewTest(APITestCase):
     '''
     Tests the capture API and executes the rule framework.
     '''
+    def setUp(self):
+        user = User.objects.create_user(username='testuser',
+                                        password='unittest',
+                                        email='testuser@seriallab.local')
+        Command().handle()
+        oag = Group.objects.get(name='Capture Access')
+        user.groups.add(oag)
+        user.save()
+        self.client.force_authenticate(user=user)
+        self.user = user
 
     def test_data(self):
         self._create_rule()
@@ -73,6 +86,7 @@ class ViewTest(APITestCase):
         response = self.client.post('{0}?rule=epcis&run-immediately=true'.format(url),
                          {'file': data},
                          format='multipart')
+        self.assertEqual(response.status_code, 201)
         task_name = response.data
         url = reverse('execute-task', kwargs= {"task_name": task_name})
         response = self.client.get(
