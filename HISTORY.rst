@@ -39,8 +39,8 @@ Added sorting for steps.  Sorting was not being handled by the order parameter.
 Added a `get_boolean_parameter` helper function to the base `rules.Step`
 class.
 
-1.1
-+++
+1.1 to 1.1.1
+++++++++++++
 Views now support DjangoModelAuthorization via sentinal querysets.  Model
 ViewSets are unchanged.
 
@@ -48,3 +48,4 @@ Updated unit tests to use authorization.
 
 Added convenience management command to create default capture group.
 
+Fixed encoding issue with saving certain types of tasks.
