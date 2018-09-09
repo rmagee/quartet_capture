@@ -384,7 +384,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         then the data will remain unchanged for following steps.
         If the data is modified, then subsequent steps will get the
         '''
-        pass
+        return data
 
     def get_parameter(self, parameter_name: str,
                       default: str = None,

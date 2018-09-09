@@ -121,6 +121,8 @@ def create_and_queue_task(data, rule_name: str,
         filename = '{0}.dat'.format(task.name)
         if isinstance(data, str):
             data = io.BytesIO(data.encode('utf-8'))
+        else:
+            data = io.BytesIO(data)
         task.location = file_store().save(name=filename, content=data)
         task.status = initial_status
         task.save()
