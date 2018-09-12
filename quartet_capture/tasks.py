@@ -15,8 +15,7 @@
 from __future__ import absolute_import, unicode_literals
 import io
 from logging import getLogger
-from django.db import transaction
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 from django.utils.timezone import datetime
 from django.core.files.storage import get_storage_class
@@ -54,6 +53,7 @@ def execute_queued_task(task_name: str, user_id: int = None):
     :param message: The message to queue.
     '''
     if user_id:
+        User = get_user_model()
         user = User.objects.get(id=user_id)
     else:
         user = None
@@ -87,11 +87,13 @@ def execute_queued_task(task_name: str, user_id: int = None):
         db_task.execution_time = (end - start)
         db_task.save()
 
+
 def create_and_queue_task(data, rule_name: str,
                           task_type: str = 'Input',
                           run_immediately: bool = False,
                           initial_status='QUEUED',
-                          task_parameters=[]):
+                          task_parameters=[],
+                          user_id: int = None):
     '''
     Will queue an outbound task in the rule engine for processing using
     the rule specified by name in the rule_name parameter.
@@ -131,10 +133,10 @@ def create_and_queue_task(data, rule_name: str,
             task_parameter.save()
         if run_immediately:
             # execute in line (skips the rule engine and celery)
-            execute_queued_task(task_name=task.name)
+            execute_queued_task(task_name=task.name, user_id=user_id)
         else:
             # queue up the task using celery
-            execute_queued_task.delay(task_name=task.name)
+            execute_queued_task.delay(task_name=task.name, user_id=user_id)
         return task
     except DBRule.DoesNotExist:
         raise RuleNotFound(

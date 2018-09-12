@@ -23,6 +23,7 @@ from quartet_capture import models, errors
 from pydoc import locate
 from django.utils.translation import gettext as _
 from django.db import transaction
+
 logger = logging.getLogger('quartet_capture')
 
 
@@ -317,7 +318,6 @@ class Rule(TaskMessaging):
             tb = traceback.format_exc()
             self.error(tb)
 
-
     class StepNotFound(Exception):
         '''
         If a step can not be loaded into memory, this will be raised
@@ -462,6 +462,23 @@ class Step(TaskMessaging, metaclass=ABCMeta):
             )
         return param.value
 
+    def get_task_parameters(self, rule_context: RuleContext) -> dict:
+        '''
+        Returns any task parameters as a dictionary with name/value pairs.
+        Many steps won't need or require task parameters, however if you
+        need to accept additional parameters from external sources, any
+        get parameters in the URL to the rule engine will be placed into
+        the task parameters and can be retrieved here.
+        :return: A python dict
+        '''
+        ret = {}
+        params = models.TaskParameter.objects.filter(
+            task__name=rule_context.task_name
+        )
+        for param in params:
+            ret[param.name] = param.value
+        return ret
+
     @abstractmethod
     def on_failure(self):
         '''
@@ -471,7 +488,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         '''
         pass
 
-    def _check_parameters(self, declared:dict, parameters:dict):
+    def _check_parameters(self, declared: dict, parameters: dict):
         for parameter in parameters.keys():
             if not declared.get(parameter):
                 raise self.ParameterNotFoundError(

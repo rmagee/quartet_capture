@@ -53,3 +53,9 @@ Fixed encoding issue with saving certain types of tasks.
 1.3
 +++
 Added support for saving raw byte data in the task engine.
+
+Modified the rule view to use the global task creation function in tasks.py.
+
+Created a mechanism for request.GET variables to be passed to the rule engine
+as task parameters.  The `Step` base-class now has a new helper function to
+get any task parameters `quartet_capture.Rules.Step.get_user

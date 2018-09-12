@@ -19,7 +19,6 @@ from quartet_epcis.parsing.errors import InvalidAggregationEventError
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 django.setup()
-from requests.auth import HTTPBasicAuth
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth.models import Group, User
@@ -34,6 +33,7 @@ class ViewTest(APITestCase):
     '''
     Tests the capture API and executes the rule framework.
     '''
+
     def setUp(self):
         user = User.objects.create_user(username='testuser',
                                         password='unittest',
@@ -52,6 +52,23 @@ class ViewTest(APITestCase):
         self.client.post('{0}?rule=epcis&run-immediately=true'.format(url),
                          {'file': data},
                          format='multipart')
+
+    def test_task_parameters(self):
+        self._create_rule()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?rule=epcis&run-immediately=true&param=abcdef'.format(url),
+            {'file': data},
+            format='multipart')
+        name = response.data
+        db_task = models.Task.objects.get(
+            name=name
+        )
+        self.assertEqual(1, db_task.taskparameter_set.count())
+        task_param = db_task.taskparameter_set.get(name='param',
+                                                   value='abcdef')
+        self.assertEqual(db_task, task_param.task)
 
     def test_epcis(self):
         self._create_rule()
@@ -83,18 +100,19 @@ class ViewTest(APITestCase):
         self._create_rule()
         url = reverse('quartet-capture')
         data = self._get_test_data()
-        response = self.client.post('{0}?rule=epcis&run-immediately=true'.format(url),
-                         {'file': data},
-                         format='multipart')
+        response = self.client.post(
+            '{0}?rule=epcis&run-immediately=true'.format(url),
+            {'file': data},
+            format='multipart')
         self.assertEqual(response.status_code, 201)
         task_name = response.data
-        url = reverse('execute-task', kwargs= {"task_name": task_name})
+        url = reverse('execute-task', kwargs={"task_name": task_name})
         response = self.client.get(
-                '{0}?run-immediately=true'.format(url)
-            )
+            '{0}?run-immediately=true'.format(url)
+        )
         self.assertEqual(response.status_code, 500)
-            # the restart should fail because it's repacking everything
-            # that was packed
+        # the restart should fail because it's repacking everything
+        # that was packed
 
     def test_no_rule_capture(self):
         self._create_rule()

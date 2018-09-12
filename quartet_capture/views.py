@@ -14,7 +14,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 import io
 from django.utils.translation import gettext as _
-from django.db import transaction
+from django.http.request import HttpRequest
 from django.core.files import storage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
@@ -24,8 +24,8 @@ from rest_framework import status
 from rest_framework import exceptions
 
 from quartet_capture.errors import TaskExecutionError
-from quartet_capture.tasks import execute_queued_task
-from quartet_capture.models import Rule, Task
+from quartet_capture.tasks import execute_queued_task, create_and_queue_task
+from quartet_capture.models import Rule, Task, TaskParameter
 
 import logging
 
@@ -141,22 +141,29 @@ class CaptureInterface(APIView):
             django_storage = storage_class()
             # create a task and get the task name to return to the
             # calling application
-            ret = self._queue_task(message, rule, django_storage)
-            # get a reference to the user id.
-            user = getattr(request, 'user', None)
-            if user:
-                user_id = user.id
-            else:
-                user_id = None
-            if run:
-                # create a task and queue it for processing - returns the task name
-                execute_queued_task(task_name=ret, user_id=user_id)
-            else:
-                execute_queued_task.delay(task_name=ret, user_id=user_id)
+            user_id = self._get_user_id(request)
+            ret = create_and_queue_task(
+                message,
+                rule_name,
+                run_immediately=run,
+                task_parameters=self._get_task_parameters(request),
+                user_id=user_id
+            )
+            return Response(ret.name, status=status.HTTP_201_CREATED)
 
-            return Response(ret, status=status.HTTP_201_CREATED)
+    def _get_user_id(self, request) -> int:
+        '''
+        Returns the primary key of the user in the request.
+        :param request: The HttpRequest
+        :return: A user id. (int)
+        '''
+        user = getattr(request, 'user', None)
+        user_id = None
+        if user:
+            user_id = user.id
+        return user_id
 
-    def _rule_exists(self, rule_name):
+    def _rule_exists(self, rule_name) -> Rule:
         '''
         Looks up the rule and throws a DoesNotExist exception if it can not
         be found.  Will prevent the potential queueing of large messages
@@ -165,11 +172,12 @@ class CaptureInterface(APIView):
         rule = Rule.objects.get(name=rule_name)
         return rule
 
-    def _queue_task(self, message, rule, file_store: storage.Storage):
+    def _queue_task(self, message, rule, file_store: storage.Storage,
+                    request: HttpRequest):
         '''
         Saves the file using
         the configured FileStorage class using the task.name with `.dat` at
-        the end and then saves the task in the database.  Celery tasks
+        the end and then saves the task in the database.  Celery tasks)
         monitor this table for messages and execute any that are marked as
         QUEUED.
         :param message: The uploaded file.
@@ -186,7 +194,29 @@ class CaptureInterface(APIView):
         task.location = file_store.save(name=filename, content=message)
         task.status = 'QUEUED'
         task.save()
+        self._get_task_parameters(task, request)
         return task.name
+
+    def _get_task_parameters(self, request:HttpRequest,
+                             ignore=['run-immediately','format','rule']):
+        '''
+        Converts the GET parameters into Task parameters if supplied.
+        Will ignore format, rule and run-immediately parameters.
+        :param db_task: The Task to add parameters to.
+        :param ignore: The list of get parameters to ignore.
+        :return: None
+        '''
+        params = request.GET.dict()
+        ret = []
+        for k, v in params.items():
+            if k not in ignore:
+                ret.append(TaskParameter(
+                    name=k,
+                    value=v
+                ))
+        return ret
+
+
 
 
 class EPCISCapture(CaptureInterface):
