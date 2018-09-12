@@ -58,4 +58,4 @@ Modified the rule view to use the global task creation function in tasks.py.
 
 Created a mechanism for request.GET variables to be passed to the rule engine
 as task parameters.  The `Step` base-class now has a new helper function to
-get any task parameters `quartet_capture.Rules.Step.get_user
+get any task parameters `quartet_capture.Rules.Step.get_task_parameters`.
