@@ -252,7 +252,7 @@ class Step(models.Model):
         verbose_name=_('Description')
     )
     step_class = models.CharField(
-        max_length=100,
+        max_length=500,
         null=False,
         help_text=_('The full python path to where the Step class is defined '
                     'for example, mypackage.mymodule.MyStep'),
