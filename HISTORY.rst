@@ -59,3 +59,6 @@ Modified the rule view to use the global task creation function in tasks.py.
 Created a mechanism for request.GET variables to be passed to the rule engine
 as task parameters.  The `Step` base-class now has a new helper function to
 get any task parameters `quartet_capture.Rules.Step.get_task_parameters`.
+
+Removed parent-level transaction scope from rule engine.  This allows steps
+to declare and control their own transaction scopes explicitly.
