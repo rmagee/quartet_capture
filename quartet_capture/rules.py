@@ -220,17 +220,16 @@ class Rule(TaskMessaging):
                     'The rule %s was loaded with no '
                     'steps configured.' % self.db_rule.name
                 )
-            with transaction.atomic():
-                for number, step in self.steps.items():
-                    # execute each step in order
-                    logger.debug('Executing step %s.', number)
-                    try:
-                        new_data = step.execute(data, self.context)
-                        data = new_data or data
-                    except:
-                        # try to clean up and then raise the original exception
-                        self._on_step_failure(step)
-                        raise
+            for number, step in self.steps.items():
+                # execute each step in order
+                logger.debug('Executing step %s.', number)
+                try:
+                    new_data = step.execute(data, self.context)
+                    data = new_data or data
+                except:
+                    # try to clean up and then raise the original exception
+                    self._on_step_failure(step)
+                    raise
         except Exception:
             # make sure error info is routed into the TaskMessage
             # execution messages
