@@ -66,3 +66,5 @@ to declare and control their own transaction scopes explicitly.
 `quartet_capture.rules.Step` classes now have an internal reference to
 the database step model used to instantiate each Step instance
 in the `db_step` property.
+
+Changed the length of the class path for steps in the step model to 500 chars.
