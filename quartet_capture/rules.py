@@ -296,6 +296,7 @@ class Rule(TaskMessaging):
                     'any dependencies are on the PYTHONPATH '
                     'and can be loaded.' % db_step.step_class
                 )
+        step.db_step = db_step
         params = {p.name: p.value
                   for p in db_step.stepparameter_set.all()}
         self.info('Step loaded successfully.')
@@ -355,9 +356,22 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         :param kwargs: Any parameters loaded from the database.
         '''
         super().__init__(db_task)
+        self._db_step = None
         self.parameters = kwargs or {}
         self._declared_parameters = {}
         self._check_parameters(self.parameters, self._declared_parameters)
+
+    @property
+    def db_step(self):
+        '''
+        The database step record this step was loaded from.
+        :return: A models.Step instance.
+        '''
+        return self._db_step
+
+    @db_step.setter
+    def db_step(self, value: models.Step):
+        self._db_step = value
 
     @property
     @abstractmethod

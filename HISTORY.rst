@@ -62,3 +62,7 @@ get any task parameters `quartet_capture.Rules.Step.get_task_parameters`.
 
 Removed parent-level transaction scope from rule engine.  This allows steps
 to declare and control their own transaction scopes explicitly.
+
+`quartet_capture.rules.Step` classes now have an internal reference to
+the database step model used to instantiate each Step instance
+in the `db_step` property.
