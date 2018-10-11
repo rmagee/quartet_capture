@@ -452,7 +452,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
             ret = val.lower() in ['true', '1']
         return ret or default
 
-    def get_or_create_parameter(self, step: models.Step, name: str,
+    def get_or_create_parameter(self, name: str,
                                 default: str,
                                 description: str = 'Default value.'):
         '''
@@ -470,7 +470,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
             param = models.StepParameter.objects.create(
                 name=name,
                 value=default,
-                step=step,
+                step=self.db_step,
                 description=description
             )
         return param.value
