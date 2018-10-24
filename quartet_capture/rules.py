@@ -154,7 +154,7 @@ class RuleContext:
         self._task_name = value
 
     @property
-    def context(self):
+    def context(self) -> dict:
         return self._context
 
     @context.setter
@@ -193,6 +193,7 @@ class Rule(TaskMessaging):
         them into memory for execution.
         :param rule: The django models.Rule instance.
         '''
+        self.data = None
         self.start_time = datetime.utcnow()
         self.db_rule = rule
         self.db_task = task
@@ -227,16 +228,22 @@ class Rule(TaskMessaging):
                     new_data = step.execute(data, self.context)
                     data = new_data or data
                 except:
-                    # try to clean up and then raise the original exception
+                    self._log_exception()
                     self._on_step_failure(step)
                     raise
+            self.data = data
         except Exception:
             # make sure error info is routed into the TaskMessage
             # execution messages
             # for this rule
-            data = traceback.format_exc()
-            self.error('Could not execute the rule.\r\n%s' % data)
+            self._log_exception()
             raise
+
+    def _log_exception(self):
+        data = traceback.format_exc()
+        ls = ["%s%s\n" % (k, v) for k, v in locals().items()]
+        data.join(ls)
+        self.error('Could not execute the rule.\r\n%s' % data)
 
     def _on_step_failure(self, step):
         '''
