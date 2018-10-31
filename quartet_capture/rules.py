@@ -472,7 +472,8 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         :return: The value of the parameter.
         '''
         try:
-            param = models.StepParameter.objects.get(name=name)
+            param = models.StepParameter.objects.get(name=name,
+                                                     step=self.db_step)
         except models.StepParameter.DoesNotExist:
             param = models.StepParameter.objects.create(
                 name=name,
