@@ -68,3 +68,5 @@ the database step model used to instantiate each Step instance
 in the `db_step` property.
 
 Changed the length of the class path for steps in the step model to 500 chars.
+
+Fixed an issue with duplicate step parameter names across multiple steps.
