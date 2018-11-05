@@ -111,8 +111,11 @@ class ViewTest(APITestCase):
             '{0}?run-immediately=true'.format(url)
         )
         self.assertEqual(response.status_code, 500)
-        # the restart should fail because it's repacking everything
-        # that was packed
+        # now try to download the file
+        url = reverse('task-data', kwargs={"task_name": task_name})
+        response = self.client.get(url)
+        test = response.content.decode('utf-8')
+        self.assertEqual(test[:3], "<ep")
 
     def test_no_rule_capture(self):
         self._create_rule()
@@ -130,6 +133,7 @@ class ViewTest(APITestCase):
             '{0}?rule=epcis&run-immediately=true'.format(url),
             {'file': data},
             format='multipart')
+
 
     def _get_test_data(self):
         '''

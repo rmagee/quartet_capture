@@ -15,6 +15,7 @@
 import io
 from django.utils.translation import gettext as _
 from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.core.files import storage
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
@@ -22,6 +23,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions
+from rest_framework_xml.renderers import XMLRenderer
 
 from quartet_capture.errors import TaskExecutionError
 from quartet_capture.tasks import execute_queued_task, create_and_queue_task
@@ -197,8 +199,8 @@ class CaptureInterface(APIView):
         self._get_task_parameters(task, request)
         return task.name
 
-    def _get_task_parameters(self, request:HttpRequest,
-                             ignore=['run-immediately','format','rule']):
+    def _get_task_parameters(self, request: HttpRequest,
+                             ignore=['run-immediately', 'format', 'rule']):
         '''
         Converts the GET parameters into Task parameters if supplied.
         Will ignore format, rule and run-immediately parameters.
@@ -217,6 +219,27 @@ class CaptureInterface(APIView):
         return ret
 
 
+class TaskXMLRenderer(XMLRenderer):
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data
+
+
+class GetTaskData(APIView):
+    """
+    Will return the data associated with a given task.
+    """
+    queryset = Task.objects.none()
+
+    def get(self, request: Request, task_name: str = None, format=None):
+        storage_class = storage.get_storage_class()
+        django_storage = storage_class()
+        file_name = '{0}.dat'.format(task_name)
+        message_file = django_storage.open(file_name)
+        data = message_file.read()
+        response = HttpResponse(data, content_type='application/text')
+        response['Content-Disposition'] = 'attachment; filename=%s' % file_name
+        return response
 
 
 class EPCISCapture(CaptureInterface):

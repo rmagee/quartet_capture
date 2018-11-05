@@ -70,3 +70,8 @@ in the `db_step` property.
 Changed the length of the class path for steps in the step model to 500 chars.
 
 Fixed an issue with duplicate step parameter names across multiple steps.
+
+1.4
++++
+Added a new view that allows users to download task data on demand via the
+`task-data` API.
