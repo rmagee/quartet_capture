@@ -3,3 +3,4 @@ celery
 haikunator
 # Additional requirements go here
 django-filter
+djangorestframework-xml
