@@ -12,4 +12,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
-__version__ = '1.3.9'
+__version__ = '1.4.0'
