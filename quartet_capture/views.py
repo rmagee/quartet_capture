@@ -50,15 +50,18 @@ class ExcuteTaskView(APIView):
     def get(self, request: Request, task_name: str = None, format=None):
         if task_name:
             run = request.query_params.get('run-immediately', False)
+            user_id = None
+            if request.user:
+                user_id = request.user.id
             try:
                 if run:
                     # create a task and queue it for processing - returns the task name
-                    execute_queued_task(task_name=task_name)
+                    execute_queued_task(task_name=task_name, user_id=user_id)
                     task = Task.objects.get(task_name=task_name)
                     if task.status == 'FAILED':
                         raise TaskExecutionError()
                 else:
-                    execute_queued_task.delay(task_name=task_name)
+                    execute_queued_task.delay(task_name=task_name, user_id=user_id)
                 ret = Response(
                     _('Task %s has been re-queued for execution.') % task_name)
             except TaskExecutionError:
