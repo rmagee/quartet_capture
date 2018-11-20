@@ -453,11 +453,11 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         the value is not found.
         :return: The value of the parameter.
         '''
-        ret = False
+        ret = default
         val = self.get_parameter(parameter_name, default, raise_exception)
         if isinstance(val, str):
             ret = val.lower() in ['true', '1']
-        return ret or default
+        return ret
 
     def get_or_create_parameter(self, name: str,
                                 default: str,
