@@ -182,7 +182,8 @@ class TaskHistory(utils.TimeStampedModel):
         help_text=_("The user that created or ran the task."),
         null=True
     )
-
+    class Meta:
+        ordering=['created']
 
 class Rule(models.Model):
     '''
