@@ -25,7 +25,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from quartet_capture.tasks import create_and_queue_task
 
-DEFAULT_INBOUND_FILE_DIRECTORY = "/var/quartet/inbound/"
+DEFAULT_INBOUND_FILE_DIRECTORY = "/var/sftp/inbound/"
 DEFAULT_INBOUND_FILE_DIRECTORY_PROCESSED = "/var/quartet/inbound-processed/"
 
 inbound_file_directory = getattr(settings,
