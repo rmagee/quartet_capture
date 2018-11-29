@@ -327,6 +327,9 @@ class Filter(models.Model):
         verbose_name=_('Description')
     )
 
+    def __str__(self):
+        return self.name
+
 class RuleFilter(models.Model):
     '''
     Used in capture if a rule isn't specified on an inbound API call, a search
