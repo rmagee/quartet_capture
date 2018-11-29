@@ -317,8 +317,8 @@ class Filter(models.Model):
         max_length=100,
         unique=True,
         null=False,
-        help_text=_('A step is a piece of logic that runs within a rule.'),
-        verbose_name=_('Step')
+        help_text=_('The name of the filter.'),
+        verbose_name=_('Name')
     )
     description = models.CharField(
         max_length=500,
