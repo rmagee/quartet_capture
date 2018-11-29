@@ -69,3 +69,22 @@ class TaskHistorySerializer(ModelSerializer):
         model = models.TaskHistory
         fields = '__all__'
 
+class RuleFilterSerializer(ModelSerializer):
+    '''
+    Default serializer for the RuleFilter model.
+    '''
+    class Meta:
+        model = models.RuleFilter
+        fields = '__all__'
+
+
+class FilterSerializer(ModelSerializer):
+    '''
+    Default serializer for the Filter model.
+    '''
+    rulefilter_set = RuleFilterSerializer(many=True, read_only=True)
+    class Meta:
+        model = models.Filter
+        fields = '__all__'
+
+

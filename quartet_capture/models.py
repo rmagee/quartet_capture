@@ -301,3 +301,85 @@ class StepParameter(Field):
         verbose_name = _('Step Parameter')
         unique_together = ('name', 'step')
         app_label = 'quartet_capture'
+
+RULE_FILTER_CHOICES = (
+    ('regex', 'Regular Expression'),
+    ('search', 'Text Search')
+)
+
+class Filter(models.Model):
+    '''
+    A container for RuleFilters used during inbound requests to match values
+    inside of inbound data to rules based on searchable string values or
+    regular expression matches.
+    '''
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        null=False,
+        help_text=_('A step is a piece of logic that runs within a rule.'),
+        verbose_name=_('Step')
+    )
+    description = models.CharField(
+        max_length=500,
+        null=True,
+        help_text=_('A short description.'),
+        verbose_name=_('Description')
+    )
+
+class RuleFilter(models.Model):
+    '''
+    Used in capture if a rule isn't specified on an inbound API call, a search
+    term can be defined that matches up rules
+    '''
+    filter = models.ForeignKey(
+        Filter,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name=_("Filter"),
+        help_text=_("The filter to associate this search value with.")
+    )
+    rule = models.ForeignKey(
+        Rule,
+        null=False,
+        on_delete=models.CASCADE,
+        help_text=_('The rule to execute if the search term executes.'),
+        verbose_name=_('Rule')
+    )
+    search_value = models.CharField(
+        max_length=2000,
+        verbose_name=_("Search Value"),
+        help_text=_("This is either a generic search term or a regular "
+                    "expression used to determine if a Rule should be "
+                    "executed."),
+        null=False
+    )
+    search_type = models.CharField(
+        max_length=10,
+        verbose_name=_("Search Type"),
+        help_text=_("Regular Expression (regex) or Text Search (text). "
+                    "A regular expression that matches something in the "
+                    "inbound data or a plain text search value containing "
+                    "a string that can be matched within the inbound data."),
+        choices=RULE_FILTER_CHOICES,
+        null=False,
+        default='regex'
+    )
+    reverse = models.BooleanField(
+        default=False,
+        verbose_name=_("Reverse"),
+        help_text=_("Set this to true if you'd like the search logic to act "
+                    "in 'reverse' in that any messages matching the defined "
+                    "value will not trigger the rule and all others will."),
+        null=False
+    )
+    order = models.IntegerField(
+        default=1,
+        verbose_name=_("Order"),
+        help_text=_("The order in which this filter should be applied."),
+        null=False
+    )
+
+    class Meta:
+        ordering=['order']
+        unique_together=['order','filter']
