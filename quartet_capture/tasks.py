@@ -14,6 +14,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 from __future__ import absolute_import, unicode_literals
 import io
+import re
 from logging import getLogger
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
@@ -21,7 +22,8 @@ from django.utils.timezone import datetime
 from django.core.files.storage import get_storage_class
 from celery import shared_task
 from quartet_capture.errors import RuleNotFound
-from quartet_capture.models import Task as DBTask, Rule as DBRule, TaskHistory
+from quartet_capture.models import Task as DBTask, Rule as DBRule, \
+    TaskHistory, Filter, RuleFilter
 from quartet_capture.rules import Rule
 import time
 
@@ -144,3 +146,28 @@ def create_and_queue_task(data, rule_name: str,
               'your configuration and ensure a Rule with that name exists.'),
             rule_name
         )
+
+
+def get_rule_by_filter(filter_name: str, message: str) -> DBRule:
+    '''
+    Looks up
+    :param filter_name:
+    :return:
+    '''
+    filter = Filter.objects.prefetch_related('rulefilter_set').get(
+        name=filter_name)
+    ret = None
+    for rule_filter in filter.rulefilter_set.all():
+        if rule_filter.search_type == 'search':
+            match = rule_filter.search_value in message \
+                    and not rule_filter.reverse
+            if match:
+                ret = rule_filter.rule.name
+                break
+        if rule_filter.search_type == 'regex':
+            pattern = re.compile(rule_filter.search_value)
+            match = pattern.match(message) and not rule_filter.reverse
+            if match:
+                ret = rule_filter.rule.name
+                break
+    return ret

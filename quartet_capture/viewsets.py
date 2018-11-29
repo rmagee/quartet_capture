@@ -58,3 +58,18 @@ class TaskHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     '''
     queryset = models.TaskHistory.objects.all()
     serializer_class = serializers.TaskHistorySerializer
+
+class FilterViewSet(viewsets.ModelViewSet):
+    '''
+    CRUD ready model view for the Filter model.
+    '''
+    queryset = models.Filter.objects.prefetch_related('rulefilter_set').all()
+    serializer_class = serializers.FilterSerializer
+
+class RuleFilterViewSet(viewsets.ModelViewSet):
+    '''
+    CRUD ready model view for the RuleFilter model.
+    '''
+    queryset = models.RuleFilter.objects.all()
+    serializer_class = serializers.RuleFilterSerializer
+

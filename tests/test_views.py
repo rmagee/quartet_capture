@@ -117,6 +117,27 @@ class ViewTest(APITestCase):
         test = response.content.decode('utf-8')
         self.assertEqual(test[:3], "<ep")
 
+    def test_execute_view_with_filter(self):
+        self._create_filter()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?filter=utf&run-immediately=true'.format(url),
+            {'file': data},
+            format='multipart')
+        self.assertEqual(response.status_code, 201)
+        task_name = response.data
+        url = reverse('execute-task', kwargs={"task_name": task_name})
+        response = self.client.get(
+            '{0}?run-immediately=true'.format(url)
+        )
+        self.assertEqual(response.status_code, 500)
+        # now try to download the file
+        url = reverse('task-data', kwargs={"task_name": task_name})
+        response = self.client.get(url)
+        test = response.content.decode('utf-8')
+        self.assertEqual(test[:3], "<ep")
+
     def test_no_rule_capture(self):
         self._create_rule()
         url = reverse('quartet-capture')
@@ -161,3 +182,25 @@ class ViewTest(APITestCase):
         epcis_step.rule = db_rule
         epcis_step.save()
         return db_rule
+
+    def _create_filter(self):
+        rule = self._create_rule()
+        filter = models.Filter.objects.create(name='utf',
+                               description='unit testing')
+        rule_filter = models.RuleFilter.objects.create(
+            filter = filter,
+            rule = rule,
+            search_value = '^<epcis',
+            search_type='regex',
+            order=1,
+            reverse=False
+        )
+        rule_filter = models.RuleFilter.objects.create(
+            filter = filter,
+            rule = rule,
+            search_value = 'urn:epc:id:sgtin:305555.0555555.5',
+            search_type='search',
+            order=2,
+            reverse=False
+        )
+        return filter

@@ -25,4 +25,7 @@ router.register(r'step-parameters', viewsets.StepParameterViewSet,
 router.register(r'tasks', viewsets.TaskViewset, base_name='tasks')
 router.register(r'task-history', viewsets.TaskHistoryViewSet,
                 base_name='task-history')
+router.register(r'filters', viewsets.FilterViewSet, base_name='filters')
+router.register(r'rule-filters', viewsets.RuleFilterViewSet,
+                base_name='rule-filters')
 urlpatterns = router.urls

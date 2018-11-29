@@ -26,7 +26,8 @@ from rest_framework import exceptions
 from rest_framework_xml.renderers import XMLRenderer
 
 from quartet_capture.errors import TaskExecutionError
-from quartet_capture.tasks import execute_queued_task, create_and_queue_task
+from quartet_capture.tasks import execute_queued_task, create_and_queue_task, \
+    get_rule_by_filter
 from quartet_capture.models import Rule, Task, TaskParameter
 
 import logging
@@ -107,18 +108,6 @@ class CaptureInterface(APIView):
     def post(self, request: Request, format=None):
         logger.info('Message from %s', getattr(request.META, 'REMOTE_HOST',
                                                'Host Info not Available'))
-        # get the rule from the query parameter
-        rule_name = request.query_params.get('rule', None)
-        run = request.query_params.get('run-immediately', False)
-        if not rule_name:
-            raise exceptions.APIException(
-                'You must supply the rule Query '
-                'Parameter at the end of your request URL. '
-                'For example: ?rule=epcis.  The quartet_capture rule '
-                'framework uses this value to determine how to process '
-                'your message.',
-                status.HTTP_400_BAD_REQUEST
-            )
         # get the message from the request
         files = request.FILES if len(request.FILES) > 0 else request.POST
         if len(files) == 0:
@@ -139,9 +128,36 @@ class CaptureInterface(APIView):
                     'it\'s variable name.',
                     status.HTTP_400_BAD_REQUEST
                 )
+            # first see if a filter is being used
+            rule_name = None
+            filter_name = request.query_params.get('filter', None)
+            if filter_name:
+                rule_name = get_rule_by_filter(filter_name, message)
+            # get the rule from the query parameter
+            if not rule_name:
+                rule_name = request.query_params.get('rule', None)
+            run = request.query_params.get('run-immediately', False)
+            if not rule_name and not filter_name:
+                exc = exceptions.APIException(
+                    'You must supply the rule Query '
+                    'Parameter at the end of your request URL. '
+                    'For example: ?rule=epcis.  The quartet_capture rule '
+                    'framework uses this value to determine how to process '
+                    'your message. Otherwise, you must specify a filter name',
+                )
+                exc.status_code = status.HTTP_400_BAD_REQUEST
+                raise exc
             # execute the rule as a task in celery
             logger.debug('Executing rule %s', rule_name)
             rule = self._rule_exists(rule_name)
+            if not rule:
+                exc = exceptions.APIException(
+                    'The rule with name %s, does '
+                    'not exist in the system.' %
+                    rule_name
+                )
+                exc.status_code = status.HTTP_400_BAD_REQUEST
+                raise exc
             storage_class = storage.get_storage_class()
             django_storage = storage_class()
             # create a task and get the task name to return to the
@@ -174,8 +190,11 @@ class CaptureInterface(APIView):
         be found.  Will prevent the potential queueing of large messages
         that don't have a rule to process them with.
         '''
-        rule = Rule.objects.get(name=rule_name)
-        return rule
+        try:
+            rule = Rule.objects.get(name=rule_name)
+            return rule
+        except Rule.DoesNotExist:
+            pass
 
     def _queue_task(self, message, rule, file_store: storage.Storage,
                     request: HttpRequest):
