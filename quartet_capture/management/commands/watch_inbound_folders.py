@@ -39,8 +39,6 @@ inbound_file_directory_processed = getattr(settings,
                                            DEFAULT_INBOUND_FILE_DIRECTORY_PROCESSED)
 
 
-
-
 class ProcessInboundFiles(FileSystemEventHandler):
     '''
     Processes files that were created.
@@ -100,8 +98,8 @@ class Command(BaseCommand):
     default_processed_directory = "/var/quartet/inbound-processed/"
 
     def create_folders_for_rules(self, root_directory):
-        '''                                                                                                                                                                  
-        Automatically creates a folder for a given rule.                                                                                                                     
+        '''
+        Automatically creates a folder for a given rule.
         '''
         all_rules = Rule.objects.all()
         for rule in all_rules:
@@ -131,5 +129,5 @@ class Command(BaseCommand):
         except:
             logging.info("An error occurred, watcher will stop.")
             observer.stop()
-            raise            
+            raise
         observer.join()
