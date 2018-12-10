@@ -24,6 +24,8 @@ from quartet_capture.models import Rule, Task, TaskHistory, TaskParameter
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from quartet_capture.tasks import create_and_queue_task
+import logging
+from shutil import chown
 
 DEFAULT_INBOUND_FILE_DIRECTORY = "/var/sftp/inbound/"
 DEFAULT_INBOUND_FILE_DIRECTORY_PROCESSED = "/var/quartet/inbound-processed/"
@@ -37,9 +39,6 @@ inbound_file_directory_processed = getattr(settings,
                                            DEFAULT_INBOUND_FILE_DIRECTORY_PROCESSED)
 
 
-def print_dt(log_msg):
-    now = str(datetime.now())
-    print(now + " -- " + log_msg)
 
 
 class ProcessInboundFiles(FileSystemEventHandler):
@@ -52,7 +51,7 @@ class ProcessInboundFiles(FileSystemEventHandler):
         '''
         with open(filepath, "rb") as f:
             data = f.read()
-            print_dt("Creating task for file %s and rule %s" % (filepath, rule_name))
+            logging.info("Creating task for file %s and rule %s" % (filepath, rule_name))
             create_and_queue_task(data=data,
                                   rule_name=rule_name,
                                   task_type="Input",
@@ -66,9 +65,9 @@ class ProcessInboundFiles(FileSystemEventHandler):
         '''
         try:
             if os.path.isdir(event.src_path):
-                print_dt("%s is a directory, ignoring" % event.src_path)
+                logging.info("%s is a directory, ignoring" % event.src_path)
                 return
-            print_dt("A file was created %s" % event.src_path)
+            logging.info("A file was created %s" % event.src_path)
             path = os.path.split(event.src_path)
             fname = path[1]
             rule_directory = path[0].split(os.sep)[-1]
@@ -77,22 +76,22 @@ class ProcessInboundFiles(FileSystemEventHandler):
                                                 fname + "-" + str(uuid.uuid1()))
             # moving the file to processed folder, with unique name.
             os.rename(event.src_path, processing_file_path)
-            print_dt("Processing %s" % processing_file_path)
+            logging.info("Processing %s" % processing_file_path)
             rule_name = rule_directory.replace('-', ' ')
             try:
                 rule = Rule.objects.get(name=rule_name)
             except Rule.DoesNotExist:
-                print_dt("Rule not found %s for file %s" % (rule_name, processing_file_path))
+                logging.info("Rule not found %s for file %s" % (rule_name, processing_file_path))
                 reset_queries()
                 return
             self.create_task_for_inbound_file(processing_file_path, rule_name)
             reset_queries()
         except Exception as e:
-            print_dt("An exception occurred while processing creation event, recovering. %s" % str(e))
+            logging.warning("An exception occurred while processing creation event, recovering. %s" % str(e))
             reset_queries()
 
     def on_modified(self, event):
-        print_dt("A file was modified %s" % event.src_path)
+        logging.info("A file was modified %s" % event.src_path)
 
 
 class Command(BaseCommand):
@@ -111,9 +110,11 @@ class Command(BaseCommand):
             try:
                 os.stat(directory_path)
             except:
-                print_dt("Creating directory %s" % directory_path)
+                logging.info("Creating directory %s" % directory_path)
                 os.mkdir(directory_path)
-        
+                chown(directory_path, group="sftp")
+                os.chmod(directory_path, 0o775)
+
     def handle(self, *args, **options):
         self.create_folders_for_rules(inbound_file_directory)
         self.create_folders_for_rules(inbound_file_directory_processed)
@@ -128,7 +129,7 @@ class Command(BaseCommand):
                 reset_queries()
                 time.sleep(120)
         except:
-            print_dt("An error occurred, watcher will stop.")
+            logging.info("An error occurred, watcher will stop.")
             observer.stop()
             raise            
         observer.join()
