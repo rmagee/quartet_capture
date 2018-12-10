@@ -39,6 +39,8 @@ inbound_file_directory_processed = getattr(settings,
                                            DEFAULT_INBOUND_FILE_DIRECTORY_PROCESSED)
 
 
+
+
 class ProcessInboundFiles(FileSystemEventHandler):
     '''
     Processes files that were created.
@@ -96,7 +98,7 @@ class Command(BaseCommand):
     help = _('Monitors a folder for files added, process them to the appropriate rule based on folder')
     default_inbound_path = "/var/quartet/inbound/"
     default_processed_directory = "/var/quartet/inbound-processed/"
-
+    
     def create_folders_for_rules(self, root_directory):
         '''
         Automatically creates a folder for a given rule.
@@ -112,7 +114,7 @@ class Command(BaseCommand):
                 os.mkdir(directory_path)
                 chown(directory_path, group="sftp")
                 os.chmod(directory_path, 0o775)
-        
+
     def handle(self, *args, **options):
         self.create_folders_for_rules(inbound_file_directory)
         self.create_folders_for_rules(inbound_file_directory_processed)
@@ -129,5 +131,5 @@ class Command(BaseCommand):
         except:
             logging.info("An error occurred, watcher will stop.")
             observer.stop()
-            raise
+            raise            
         observer.join()
