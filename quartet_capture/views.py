@@ -17,6 +17,7 @@ from django.utils.translation import gettext as _
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.core.files import storage
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.request import Request
@@ -27,13 +28,18 @@ from rest_framework_xml.renderers import XMLRenderer
 
 from quartet_capture.errors import TaskExecutionError
 from quartet_capture.tasks import execute_queued_task, create_and_queue_task, \
-    get_rule_by_filter
+    get_rule_by_filter, get_rules_by_filter
 from quartet_capture.models import Rule, Task, TaskParameter
 
 import logging
 
 logger = logging.getLogger('quartet_capture')
 
+
+# Set RETURN_ALL_FILTERS in your settings to overide the default behavior of
+# the capture filters.  Setting to false will make the default behavior
+# to return the first matched filter.
+DEFAULT_RETURN_ALL_FILTERS = getattr(settings, 'RETURN_ALL_FILTERS', True)
 
 class ExcuteTaskView(APIView):
     """
@@ -97,6 +103,9 @@ class CaptureInterface(APIView):
     When configuring the REST_FRAMEWORK attributes, use the
     DEFAULT_THROTTLE_CLASS of 'rest_framework.throttling.ScopedRateThrottle'
     and configure your upload throttle using the scope `capture_upload`.
+
+    If multiple rules were executed, only the last rule
+    name will be returned.
     '''
     # set the parser to handle HTTP post / upload
     parser_classes = (MultiPartParser,)
@@ -129,15 +138,18 @@ class CaptureInterface(APIView):
                     status.HTTP_400_BAD_REQUEST
                 )
             # first see if a filter is being used
-            rule_name = None
+            rules = []
             filter_name = request.query_params.get('filter', None)
             if filter_name:
-                rule_name = get_rule_by_filter(filter_name, message)
+                logger.debug('Grabbing a list of rules for filter %s.',
+                             filter_name)
+                rules = get_rules_by_filter(filter_name, message)
             # get the rule from the query parameter
-            if not rule_name:
-                rule_name = request.query_params.get('rule', None)
+            if len(rules) == 0:
+                logger.debug('No rules were found.')
+                rules = [request.query_params.get('rule', None)]
             run = request.query_params.get('run-immediately', False)
-            if not rule_name and not filter_name:
+            if len(rules) == 0 and not filter_name:
                 exc = exceptions.APIException(
                     'You must supply the rule Query '
                     'Parameter at the end of your request URL. '
@@ -148,28 +160,28 @@ class CaptureInterface(APIView):
                 exc.status_code = status.HTTP_400_BAD_REQUEST
                 raise exc
             # execute the rule as a task in celery
-            logger.debug('Executing rule %s', rule_name)
-            rule = self._rule_exists(rule_name)
-            if not rule:
-                exc = exceptions.APIException(
-                    'The rule with name %s, does '
-                    'not exist in the system.' %
-                    rule_name
+            for rule_name in rules:
+                logger.debug('Executing rule %s', rule_name)
+                if not self._rule_exists(rule_name):
+                    exc = exceptions.APIException(
+                        'The rule with name %s, does '
+                        'not exist in the system.' %
+                        rule_name
+                    )
+                    exc.status_code = status.HTTP_400_BAD_REQUEST
+                    raise exc
+                storage_class = storage.get_storage_class()
+                django_storage = storage_class()
+                # create a task and get the task name to return to the
+                # calling application
+                user_id = self._get_user_id(request)
+                ret = create_and_queue_task(
+                    message,
+                    rule_name,
+                    run_immediately=run,
+                    task_parameters=self._get_task_parameters(request),
+                    user_id=user_id
                 )
-                exc.status_code = status.HTTP_400_BAD_REQUEST
-                raise exc
-            storage_class = storage.get_storage_class()
-            django_storage = storage_class()
-            # create a task and get the task name to return to the
-            # calling application
-            user_id = self._get_user_id(request)
-            ret = create_and_queue_task(
-                message,
-                rule_name,
-                run_immediately=run,
-                task_parameters=self._get_task_parameters(request),
-                user_id=user_id
-            )
             return Response(ret.name, status=status.HTTP_201_CREATED)
 
     def _get_user_id(self, request) -> int:

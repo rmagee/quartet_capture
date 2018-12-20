@@ -16,6 +16,7 @@ from __future__ import absolute_import, unicode_literals
 import io
 import re
 from logging import getLogger
+from typing import List
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 from django.utils.timezone import datetime
@@ -27,6 +28,7 @@ from quartet_capture.models import Task as DBTask, Rule as DBRule, \
 from quartet_capture.rules import Rule
 import time
 
+StringList = List[str]
 logger = getLogger('quartet_capture')
 
 
@@ -148,9 +150,42 @@ def create_and_queue_task(data, rule_name: str,
         )
 
 
-def get_rule_by_filter(filter_name: str, message: str) -> DBRule:
+def get_rules_by_filter(filter_name: str, message: str,
+                        return_all: bool = True) -> StringList:
     '''
-    Looks up
+    Looks up any matching rules based on an inbound filter and returns a list
+    of matches regardless of whether one or more matches is found and
+    regardless of whether the `return_all` flag has been set to false.
+    :param filter_name: The name of the filter to use (which contains the
+    search term).
+    :param message: The message to search within.
+    :param: return_all: Whether to return the first match or all matches.
+    Default is True.
+    :return: A list of rule names instances.
+    '''
+    filter = Filter.objects.prefetch_related('rulefilter_set').get(
+        name=filter_name)
+    ret = []
+    for rule_filter in filter.rulefilter_set.all():
+        if rule_filter.search_type == 'search':
+            match = rule_filter.search_value in message \
+                    and not rule_filter.reverse
+            if match:
+                ret.append(rule_filter.rule.name)
+                if not return_all: break
+        if rule_filter.search_type == 'regex':
+            pattern = re.compile(rule_filter.search_value)
+            match = pattern.match(message) and not rule_filter.reverse
+            if match:
+                ret.append(rule_filter.rule.name)
+                if not return_all: break
+    return ret
+
+
+def get_rule_by_filter(filter_name: str, message: str) -> str:
+    '''
+    Looks up a rule name based on a search value within a message.  If found,
+    the message will be routed to the rule that was found.
     :param filter_name:
     :return:
     '''
