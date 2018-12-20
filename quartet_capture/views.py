@@ -35,11 +35,11 @@ import logging
 
 logger = logging.getLogger('quartet_capture')
 
-
-# Set RETURN_ALL_FILTERS in your settings to overide the default behavior of
+# Set RETURN_ALL_RULES in your settings to overide the default behavior of
 # the capture filters.  Setting to false will make the default behavior
 # to return the first matched filter.
-DEFAULT_RETURN_ALL_FILTERS = getattr(settings, 'RETURN_ALL_FILTERS', True)
+DEFAULT_RETURN_ALL_RULES = getattr(settings, 'RETURN_ALL_RULES', True)
+
 
 class ExcuteTaskView(APIView):
     """
@@ -68,7 +68,8 @@ class ExcuteTaskView(APIView):
                     if task.status == 'FAILED':
                         raise TaskExecutionError()
                 else:
-                    execute_queued_task.delay(task_name=task_name, user_id=user_id)
+                    execute_queued_task.delay(task_name=task_name,
+                                              user_id=user_id)
                 ret = Response(
                     _('Task %s has been re-queued for execution.') % task_name)
             except TaskExecutionError:
@@ -143,7 +144,10 @@ class CaptureInterface(APIView):
             if filter_name:
                 logger.debug('Grabbing a list of rules for filter %s.',
                              filter_name)
-                rules = get_rules_by_filter(filter_name, message)
+                return_all_rules = request.query_params.get(
+                    'return-all-rules') or DEFAULT_RETURN_ALL_RULES
+                rules = get_rules_by_filter(filter_name, message,
+                                            return_all_rules)
             # get the rule from the query parameter
             if len(rules) == 0:
                 logger.debug('No rules were found.')
