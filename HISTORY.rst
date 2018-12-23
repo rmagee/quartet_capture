@@ -75,3 +75,13 @@ Fixed an issue with duplicate step parameter names across multiple steps.
 +++
 Added a new view that allows users to download task data on demand via the
 `task-data` API.
+
+
+2.0 December 23
++++++++++++++++
+* New feature in Filters and Rule Filters which allows users to route
+  inbound messages to rules based on text search criteria or
+  regular expressions.
+* New feature for the watching of local directories to capture inbound
+  data via protocols that use directory-dependent mechanisms...such as
+  FTP, SFTP and WebDAV.
