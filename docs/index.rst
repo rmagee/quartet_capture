@@ -23,6 +23,7 @@ Contents:
     authors
     history
     rules
+    rule_filters
     epcis
     api
 

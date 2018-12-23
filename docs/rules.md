@@ -114,5 +114,3 @@ in the `quartet_epcis.parsing.steps` module as an example.  The
 to be implemented by developers to customize rule processing.  More on 
 this later.*
 
-
-    

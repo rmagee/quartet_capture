@@ -24,6 +24,7 @@ from haikunator import Haikunator
 
 haiku = Haikunator()
 
+
 def haikunate():
     '''
     Since the haikunator is a class method
@@ -37,6 +38,7 @@ def haikunate():
     finally:
         lock.release()
     return ret
+
 
 SEVERITY_CHOICES = (
     ('DEBUG', 'DEBUG'),
@@ -182,8 +184,10 @@ class TaskHistory(utils.TimeStampedModel):
         help_text=_("The user that created or ran the task."),
         null=True
     )
+
     class Meta:
-        ordering=['created']
+        ordering = ['created']
+
 
 class Rule(models.Model):
     '''
@@ -302,10 +306,12 @@ class StepParameter(Field):
         unique_together = ('name', 'step')
         app_label = 'quartet_capture'
 
+
 RULE_FILTER_CHOICES = (
     ('regex', 'Regular Expression'),
     ('search', 'Text Search')
 )
+
 
 class Filter(models.Model):
     '''
@@ -329,6 +335,7 @@ class Filter(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class RuleFilter(models.Model):
     '''
@@ -382,7 +389,28 @@ class RuleFilter(models.Model):
         help_text=_("The order in which this filter should be applied."),
         null=False
     )
+    default = models.BooleanField(
+        default=False,
+        verbose_name=_("Default"),
+        help_text=_("If this is set to true, then this rule filter will be "
+                    "selected if no rule filters prior to matched their "
+                    "search values."),
+        null=False
+    )
+    break_on_true = models.BooleanField(
+        default=False,
+        verbose_name=_("Break on True"),
+        help_text=_(
+            "If this Rule Filter finds its search value and there are more "
+            "filters to search against, this will cause the filter logic to "
+            "stop looking for matches if this rule filter search "
+            "is successful."),
+        null=False
+    )
+
+    def __str__(self):
+        return "%s:%s" % (self.rule, self.search_value)
 
     class Meta:
-        ordering=['order']
-        unique_together=['order','filter']
+        ordering = ['order']
+        unique_together = ['order', 'filter']

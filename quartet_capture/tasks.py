@@ -166,19 +166,26 @@ def get_rules_by_filter(filter_name: str, message: str,
     filter = Filter.objects.prefetch_related('rulefilter_set').get(
         name=filter_name)
     ret = []
+    match_found = False
     for rule_filter in filter.rulefilter_set.all():
-        if rule_filter.search_type == 'search':
+        if not match_found and rule_filter.default:
+            ret.append(rule_filter.rule.name)
+        elif match_found and rule_filter.default:
+            pass
+        elif rule_filter.search_type == 'search':
             match = rule_filter.search_value in message \
                     and not rule_filter.reverse
             if match:
+                match_found = True
                 ret.append(rule_filter.rule.name)
-                if not return_all: break
-        if rule_filter.search_type == 'regex':
+                if not return_all or rule_filter.break_on_true: break
+        elif rule_filter.search_type == 'regex':
             pattern = re.compile(rule_filter.search_value)
             match = pattern.match(message) and not rule_filter.reverse
             if match:
+                match_found = True
                 ret.append(rule_filter.rule.name)
-                if not return_all: break
+                if not return_all or rule_filter.break_on_true: break
     return ret
 
 

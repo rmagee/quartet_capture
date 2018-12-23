@@ -23,6 +23,7 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth.models import Group, User
 from quartet_capture import models
+from quartet_capture.views import get_rules_by_filter
 from quartet_capture.management.commands.create_capture_groups import Command
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
@@ -138,6 +139,117 @@ class ViewTest(APITestCase):
         test = response.content.decode('utf-8')
         self.assertEqual(test[:3], "<ep")
 
+    def test_execute_view_with_filter_1_true(self):
+        filter, rf_1, rf_2, rf_3 = self._create_filter()
+        rf_2.search_value = 'no findy'
+        rf_3.default = False
+        rf_3.search_value = 'no findy'
+        rf_2.save()
+        rf_3.save()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?filter=utf&run-immediately=true'.format(url),
+            {'file': data},
+            format='multipart')
+        self.assertEqual(response.status_code, 201)
+        task_name = response.data
+        url = reverse('execute-task', kwargs={"task_name": task_name})
+        response = self.client.get(
+            '{0}?run-immediately=true'.format(url)
+        )
+        rules = get_rules_by_filter(filter_name='utf', message=data)
+        self.assertIn('epcis', rules, msg='Rule epcis_1 should have been '
+                                            'selected.')
+
+
+    def test_execute_view_with_filter_2_true(self):
+        filter, rf_1, rf_2, rf_3 = self._create_filter()
+        rf_1.search_value = 'no findy'
+        rf_3.default = False
+        rf_3.search_value = 'no findy'
+        rf_1.save()
+        rf_3.save()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?filter=utf&run-immediately=true'.format(url),
+            {'file': data},
+            format='multipart')
+        self.assertEqual(response.status_code, 201)
+        task_name = response.data
+        url = reverse('execute-task', kwargs={"task_name": task_name})
+        response = self.client.get(
+            '{0}?run-immediately=true'.format(url)
+        )
+        rules = get_rules_by_filter(filter_name='utf', message=data)
+        self.assertIn('epcis_2', rules, msg='Rule epcis_1 should have been '
+                                            'selected.')
+
+    def test_execute_view_with_default(self):
+        filter, rf_1, rf_2, rf_3 = self._create_filter()
+        rf_1.search_value = 'no findy'
+        rf_2.search_value = 'no findy'
+        rf_1.save()
+        rf_2.save()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?filter=utf&run-immediately=true'.format(url),
+            {'file': data},
+            format='multipart')
+        self.assertEqual(response.status_code, 201)
+        task_name = response.data
+        url = reverse('execute-task', kwargs={"task_name": task_name})
+        response = self.client.get(
+            '{0}?run-immediately=true'.format(url)
+        )
+        rules = get_rules_by_filter(filter_name='utf', message=data)
+        self.assertIn('epcis_3', rules, msg='Rule epcis_1 should have been '
+                                            'selected.')
+
+    def test_execute_view_with_break_on_true(self):
+        filter, rf_1, rf_2, rf_3 = self._create_filter()
+        rf_1.break_on_true = True
+        rf_1.save()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?filter=utf&run-immediately=true'.format(url),
+            {'file': data},
+            format='multipart')
+        self.assertEqual(response.status_code, 201)
+        task_name = response.data
+        url = reverse('execute-task', kwargs={"task_name": task_name})
+        response = self.client.get(
+            '{0}?run-immediately=true'.format(url)
+        )
+        rules = get_rules_by_filter(filter_name='utf', message=data)
+        self.assertEqual(len(rules), 1, "Too many rules were returned.")
+        self.assertIn('epcis', rules)
+
+    def test_execute_view_with_return_all(self):
+        """
+        Returns everything but the default value.
+        """
+        filter, rf_1, rf_2, rf_3 = self._create_filter()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?filter=utf&run-immediately=true'.format(url),
+            {'file': data},
+            format='multipart')
+        self.assertEqual(response.status_code, 201)
+        task_name = response.data
+        url = reverse('execute-task', kwargs={"task_name": task_name})
+        response = self.client.get(
+            '{0}?run-immediately=true'.format(url)
+        )
+        rules = get_rules_by_filter(filter_name='utf', message=data)
+        self.assertEqual(len(rules), 2, "2 rules should be returned.")
+        self.assertIn('epcis', rules)
+        self.assertIn('epcis_2', rules)
+
     def test_no_rule_capture(self):
         self._create_rule()
         url = reverse('quartet-capture')
@@ -155,7 +267,6 @@ class ViewTest(APITestCase):
             {'file': data},
             format='multipart')
 
-
     def _get_test_data(self):
         '''
         Loads the XML file and passes its data back as a string.
@@ -165,9 +276,9 @@ class ViewTest(APITestCase):
         with open(data_path) as data_file:
             return data_file.read()
 
-    def _create_rule(self):
+    def _create_rule(self, rule_name='epcis'):
         db_rule = models.Rule()
-        db_rule.name = 'epcis'
+        db_rule.name = rule_name
         db_rule.description = 'EPCIS Parsing rule utilizing quartet_epcis.'
         db_rule.save()
         rp = models.RuleParameter(name='test name', value='test value',
@@ -185,22 +296,33 @@ class ViewTest(APITestCase):
 
     def _create_filter(self):
         rule = self._create_rule()
+        rule_2 = self._create_rule('epcis_2')
+        rule_3 = self._create_rule('epcis_3')
         filter = models.Filter.objects.create(name='utf',
-                               description='unit testing')
-        rule_filter = models.RuleFilter.objects.create(
-            filter = filter,
-            rule = rule,
-            search_value = '^<epcis',
+                                              description='unit testing')
+        rule_filter_1 = models.RuleFilter.objects.create(
+            filter=filter,
+            rule=rule,
+            search_value='^<epcis',
             search_type='regex',
             order=1,
             reverse=False
         )
-        rule_filter = models.RuleFilter.objects.create(
-            filter = filter,
-            rule = rule,
-            search_value = 'urn:epc:id:sgtin:305555.0555555.5',
+        rule_filter_2 = models.RuleFilter.objects.create(
+            filter=filter,
+            rule=rule_2,
+            search_value='urn:epc:id:sgtin:305555.0555555.5',
             search_type='search',
             order=2,
             reverse=False
         )
-        return filter
+        rule_filter_3 = models.RuleFilter.objects.create(
+            filter=filter,
+            rule=rule_3,
+            search_value='',
+            search_type='search',
+            order=3,
+            reverse=False,
+            default=True
+        )
+        return filter, rule_filter_1, rule_filter_2, rule_filter_3
