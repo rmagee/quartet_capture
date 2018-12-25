@@ -15,14 +15,13 @@
 import os
 import django
 
-from quartet_epcis.parsing.errors import InvalidAggregationEventError
-
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 django.setup()
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth.models import Group, User
 from quartet_capture import models
+from quartet_capture.rules import clone_rule
 from quartet_capture.views import get_rules_by_filter
 from quartet_capture.management.commands.create_capture_groups import Command
 
@@ -276,6 +275,14 @@ class ViewTest(APITestCase):
         with open(data_path) as data_file:
             return data_file.read()
 
+    def test_clone_rule(self):
+        rule = self._create_rule()
+        self._create_filter(rule)
+        new_rule = clone_rule(rule.name, 'new_rule')
+        self.assertEqual(new_rule.step_set.count(), 1)
+        self.assertEqual(new_rule.ruleparameter_set.count(), 1)
+        self.assertEqual(new_rule.rulefilter_set.count(), 0)
+
     def _create_rule(self, rule_name='epcis'):
         db_rule = models.Rule()
         db_rule.name = rule_name
@@ -294,8 +301,8 @@ class ViewTest(APITestCase):
         epcis_step.save()
         return db_rule
 
-    def _create_filter(self):
-        rule = self._create_rule()
+    def _create_filter(self, rule=None):
+        rule = rule or self._create_rule()
         rule_2 = self._create_rule('epcis_2')
         rule_3 = self._create_rule('epcis_3')
         filter = models.Filter.objects.create(name='utf',

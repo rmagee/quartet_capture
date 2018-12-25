@@ -26,9 +26,10 @@ from rest_framework import status
 from rest_framework import exceptions
 from rest_framework_xml.renderers import XMLRenderer
 
+from quartet_capture.rules import clone_rule
 from quartet_capture.errors import TaskExecutionError
 from quartet_capture.tasks import execute_queued_task, create_and_queue_task, \
-    get_rule_by_filter, get_rules_by_filter
+    get_rules_by_filter
 from quartet_capture.models import Rule, Task, TaskParameter
 
 import logging
@@ -86,6 +87,37 @@ class ExcuteTaskView(APIView):
                     'error log.',
                     status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+        else:
+            ret = Response()
+        return ret
+
+
+class CloneRuleView(APIView):
+    """
+    Will clone a rule instance.  The clone will contain copies of the
+    rule parameters, steps and step parameters.  No RuleFilter references
+    will be copied.
+
+    For more info on functionality, see the `quartet_capture.rules.clone_rule`
+    function.
+    """
+    queryset = Rule.objects.none()
+
+    def get(self, request, rule_name=None, new_rule_name=None):
+        if rule_name:
+            try:
+                new_rule = clone_rule(rule_name, new_rule_name=new_rule_name)
+                ret = Response(new_rule.name)
+            except Exception:
+                if getattr(settings, 'DEBUG', False):
+                    logger.exception('Error trying to clone rule with name.'
+                                     % rule_name)
+                    ret = Response(
+                        'There was an unexected error cloning the rule.',
+                        status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+                else:
+                    raise
         else:
             ret = Response()
         return ret

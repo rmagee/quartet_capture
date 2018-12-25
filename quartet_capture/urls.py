@@ -36,7 +36,13 @@ urlpatterns = [
         name='execute-task'),
     url(r'^task-data/(?P<task_name>[a-z]*-[a-z]*-[a-f,0-9]*)/?$',
         views.GetTaskData.as_view(),
-        name='task-data')
+        name='task-data'),
+    url(r'^clone-rule/$',
+        views.CloneRuleView.as_view(),
+        name='clone'),
+    url(r'^clone-rule/(?P<rule_name>[0-9a-zA-Z\W\s]*)/$',
+        views.CloneRuleView.as_view(),
+        name='clone-rule')
 ]
 
 urlpatterns += route_patterns

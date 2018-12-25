@@ -16,13 +16,15 @@
 import traceback
 import logging
 import importlib
+from copy import deepcopy
 from datetime import datetime
 from enum import Enum
 from abc import ABCMeta, abstractmethod
 from quartet_capture import models, errors
 from pydoc import locate
 from django.utils.translation import gettext as _
-from django.db import transaction
+from django.db.models import Model
+
 
 logger = logging.getLogger('quartet_capture')
 
@@ -524,3 +526,56 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         Raise when expecting a parameter and it was not found.
         '''
         pass
+
+def _rename_model(model_instance: Model, model_type):
+    i = 1
+    new_rule_name = "%s_copy_%s" % (model_instance.name, i)
+    while model_type.objects.filter(name=new_rule_name).exists():
+        i += 1
+        new_rule_name = "%s_copy_%s" % (model_instance.name, i)
+    model_instance.name = new_rule_name
+
+def clone_rule(rule_name: str, new_rule_name:str):
+    """
+    Clones a rule. If no new rule name is selected, the new rule name
+    will be [rule_name] (n) - where rule_name is the original name and
+    n is an integer representing the number of the copy if there is more
+    than one.  For example, copy of *This Rule* would result in
+    *This Rule 1*.
+    :param rule_name: The name of the rule to clone.
+    :param new_rule_name: The name of the new rule.
+    :return: The new rule model instance.
+    """
+    logger.debug('Getting rule with name %s.', rule_name)
+    db_rule = models.Rule.objects.prefetch_related(
+        'step_set',
+        'step_set__stepparameter_set',
+        'ruleparameter_set'
+    ).get(name=rule_name)
+
+    new_rule = deepcopy(db_rule)
+    new_rule.id = None
+    new_rule.pk = None
+    _rename_model(new_rule, models.Rule)
+    new_rule.save()
+    for rule_param in db_rule.ruleparameter_set.all():
+        new_rp = deepcopy(rule_param)
+        new_rp.id = None
+        new_rp.pk = None
+        new_rp.rule = new_rule
+        new_rp.save()
+    for step in db_rule.step_set.all():
+        new_step = deepcopy(step)
+        new_step.id = None
+        new_step.pk = None
+        new_step.rule = new_rule
+        new_step.save()
+        for step_parameter in step.stepparameter_set.all():
+            new_sp = deepcopy(step_parameter)
+            new_sp.id = None
+            new_sp.pk = None
+            new_sp.step = new_step
+            new_sp.save()
+    return new_rule
+
+
