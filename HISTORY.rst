@@ -85,3 +85,8 @@ Added a new view that allows users to download task data on demand via the
 * New feature for the watching of local directories to capture inbound
   data via protocols that use directory-dependent mechanisms...such as
   FTP, SFTP and WebDAV.
+
+2.1 December 25
++++++++++++++++
+* Merry Xmas- you can now clone rules.  See the CloneRuleView view in the
+  views module for more.
