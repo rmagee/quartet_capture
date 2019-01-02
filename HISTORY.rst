@@ -90,3 +90,7 @@ Added a new view that allows users to download task data on demand via the
 +++++++++++++++
 * Merry Xmas- you can now clone rules.  See the CloneRuleView view in the
   views module for more.
+
+2.2 January 2
++++++++++++++
+* Happy new year, added nested rule data into the task detail API.
