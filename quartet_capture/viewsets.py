@@ -50,7 +50,7 @@ class StepParameterViewSet(viewsets.ModelViewSet):
 class TaskViewset(viewsets.ModelViewSet):
     queryset = models.Task.objects.all()
     serializer_class = serializers.TaskSerializer
-    search_fields = ['name', 'status', 'status_changed']
+    search_fields = ['name', 'status', 'status_changed', 'rule__name']
 
 class TaskHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     '''

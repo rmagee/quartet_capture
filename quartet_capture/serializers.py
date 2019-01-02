@@ -17,7 +17,7 @@ This module defines the default serializers for the
 rule framework model.
 '''
 from django.contrib.auth import get_user_model
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 from quartet_capture import models
 
 User = get_user_model()
@@ -83,6 +83,7 @@ class TaskHistorySerializer(ModelSerializer):
 class TaskSerializer(ModelSerializer):
     taskmessage_set = TaskMessageSerializer(many=True, read_only=True)
     taskhistory_set = TaskHistorySerializer(many=True, read_only=True)
+    rule = RuleSerializer(many=False, read_only=True)
 
     class Meta:
         model = models.Task
