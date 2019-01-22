@@ -40,7 +40,8 @@ urlpatterns = [
     url(r'^clone-rule/$',
         views.CloneRuleView.as_view(),
         name='clone'),
-    url(r'^clone-rule/(?P<rule_name>[0-9a-zA-Z\W\s]*)/$',
+    url(
+        r'^clone-rule/(?P<rule_name>[0-9a-zA-Z\W\s]*)/(?P<new_rule_name>[0-9a-zA-Z\W\s]*)/$',
         views.CloneRuleView.as_view(),
         name='clone-rule')
 ]
