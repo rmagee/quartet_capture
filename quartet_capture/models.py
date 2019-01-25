@@ -214,7 +214,7 @@ class Rule(models.Model):
     class Meta:
         verbose_name = _('Rule')
         app_label = 'quartet_capture'
-
+        ordering=['name']
 
 class RuleParameter(Field):
     '''
@@ -336,12 +336,29 @@ class Filter(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = _('Filter')
+        ordering = ['name']
+
 
 class RuleFilter(models.Model):
     '''
     Used in capture if a rule isn't specified on an inbound API call, a search
     term can be defined that matches up rules
     '''
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        help_text=_('The name of the rule filter.'),
+        verbose_name=_('Name')
+    )
+    description = models.CharField(
+        max_length=500,
+        null=True,
+        help_text=_('A short description of what this rule filter does.'),
+        verbose_name=_('Description')
+    )
     filter = models.ForeignKey(
         Filter,
         null=False,
