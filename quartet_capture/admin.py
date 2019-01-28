@@ -12,10 +12,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
-# -*- coding: utf-8
-from django.apps import AppConfig
+from django.contrib import admin
+
+from quartet_capture import models
+
+class RuleFilterInline(admin.StackedInline):
+    model = models.RuleFilter
+    extra = 0
+
+@admin.register(models.Filter)
+class FilterAdmin(admin.ModelAdmin):
+    inlines = [
+        RuleFilterInline,
+    ]
+
+@admin.register(models.RuleFilter)
+class RuleFilterAdmin(admin.ModelAdmin):
+    pass
 
 
-class QuartetCaptureConfig(AppConfig):
-    name = 'quartet_capture'
-    verbose_name = 'Quartet Capture'
+def register_to_site(admin_site):
+    admin_site.register(models.RuleFilter, RuleFilterAdmin)
+    admin_site.register(models.Filter, FilterAdmin)
