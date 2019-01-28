@@ -13,6 +13,7 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 import io
+import coreapi, coreschema
 from django.utils.translation import gettext as _
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
@@ -24,6 +25,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions
+from rest_framework.schemas import ManualSchema
 from rest_framework_xml.renderers import XMLRenderer
 
 from quartet_capture.rules import clone_rule
@@ -102,6 +104,21 @@ class CloneRuleView(APIView):
     function.
     """
     queryset = Rule.objects.none()
+
+    schema = ManualSchema(fields=[
+        coreapi.Field(
+            "rule_name",
+            required=True,
+            location="path",
+            schema=coreschema.String()
+        ),
+        coreapi.Field(
+            "new_rule_name",
+            required=True,
+            location="path",
+            schema=coreschema.String()
+        ),
+    ])
 
     def get(self, request, rule_name=None, new_rule_name=None):
         if rule_name:

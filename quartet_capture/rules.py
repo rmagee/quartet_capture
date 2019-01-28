@@ -527,9 +527,9 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         '''
         pass
 
-def _rename_model(model_instance: Model, model_type):
+def _rename_model(model_instance: Model, model_type, new_rule_name = None):
     i = 1
-    new_rule_name = "%s_copy_%s" % (model_instance.name, i)
+    new_rule_name = "%s_copy_%s" % (model_instance.name, i) or new_rule_name
     while model_type.objects.filter(name=new_rule_name).exists():
         i += 1
         new_rule_name = "%s_copy_%s" % (model_instance.name, i)
@@ -556,7 +556,7 @@ def clone_rule(rule_name: str, new_rule_name:str):
     new_rule = deepcopy(db_rule)
     new_rule.id = None
     new_rule.pk = None
-    _rename_model(new_rule, models.Rule)
+    _rename_model(new_rule, models.Rule, new_rule_name)
     new_rule.save()
     for rule_param in db_rule.ruleparameter_set.all():
         new_rp = deepcopy(rule_param)
