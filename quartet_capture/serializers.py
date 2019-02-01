@@ -17,11 +17,10 @@ This module defines the default serializers for the
 rule framework model.
 '''
 from django.contrib.auth import get_user_model
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+from rest_framework.serializers import ModelSerializer
 from quartet_capture import models
 
 User = get_user_model()
-
 
 class StepParameterSerializer(ModelSerializer):
     class Meta:

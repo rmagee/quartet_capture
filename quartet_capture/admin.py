@@ -13,7 +13,6 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 from django.contrib import admin
-
 from quartet_capture import models
 
 class RuleFilterInline(admin.StackedInline):
@@ -30,7 +29,55 @@ class FilterAdmin(admin.ModelAdmin):
 class RuleFilterAdmin(admin.ModelAdmin):
     pass
 
+class StepInline(admin.StackedInline):
+    model = models.Step
+    extra = 0
+
+@admin.register(models.Rule)
+class RuleAdmin(admin.ModelAdmin):
+    inlines = [
+        StepInline
+    ]
+    list_display = ('name', 'description')
+
+class StepParameterInline(admin.StackedInline):
+    model = models.StepParameter
+    extra = 0
+
+@admin.register(models.Step)
+class StepAdmin(admin.ModelAdmin):
+    inlines = [
+        StepParameterInline
+    ]
+    list_display = ('name', 'rule', 'order', 'description')
+
+class TaskMessageInline(admin.TabularInline):
+    model = models.TaskMessage
+    extra = 0
+    readonly_fields = ('level', 'message', 'created')
+
+class TaskHistoryInline(admin.TabularInline):
+    model = models.TaskHistory
+    extra = 0
+
+class TaskParameterInline(admin.TabularInline):
+    model = models.TaskParameter
+    extra = 0
+    readonly_fields = ('name', 'value', 'description')
+
+@admin.register(models.Task)
+class TaskAdmin(admin.ModelAdmin):
+    inlines = [
+        TaskParameterInline,
+        TaskHistoryInline,
+        TaskMessageInline,
+    ]
+    list_display = ('status_changed', 'name', 'rule', 'status', 'execution_time')
+    ordering = ('-status_changed',)
 
 def register_to_site(admin_site):
     admin_site.register(models.RuleFilter, RuleFilterAdmin)
     admin_site.register(models.Filter, FilterAdmin)
+    admin_site.register(models.Rule, RuleAdmin)
+    admin_site.register(models.Step, StepAdmin)
+    admin_site.register(models.Task, TaskAdmin)

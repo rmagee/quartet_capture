@@ -120,7 +120,7 @@ class CloneRuleView(APIView):
         ),
     ])
 
-    def get(self, request, rule_name=None, new_rule_name=None):
+    def post(self, request, rule_name=None, new_rule_name=None):
         if rule_name:
             try:
                 new_rule = clone_rule(rule_name, new_rule_name=new_rule_name)

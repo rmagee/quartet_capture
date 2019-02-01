@@ -187,6 +187,8 @@ class TaskHistory(utils.TimeStampedModel):
 
     class Meta:
         ordering = ['created']
+        verbose_name = _('Task History')
+        verbose_name_plural = _('Task History')
 
 
 class Rule(models.Model):
