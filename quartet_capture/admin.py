@@ -24,6 +24,7 @@ class FilterAdmin(admin.ModelAdmin):
     inlines = [
         RuleFilterInline,
     ]
+    list_display = ('name', 'description')
 
 @admin.register(models.RuleFilter)
 class RuleFilterAdmin(admin.ModelAdmin):
