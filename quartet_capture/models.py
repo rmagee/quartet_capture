@@ -428,7 +428,7 @@ class RuleFilter(models.Model):
     )
 
     def __str__(self):
-        return "%s:%s" % (self.rule, self.search_value)
+        return self.name or "%s:%s" % (self.rule, self.search_value)
 
     class Meta:
         ordering = ['order']
