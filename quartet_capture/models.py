@@ -20,9 +20,10 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from model_utils import models as utils
 from model_utils import Choices
+from quartet_capture.haiku import adjectives, nouns
 from haikunator import Haikunator
 
-haiku = Haikunator()
+haiku = Haikunator(adjectives=adjectives, nouns=nouns)
 
 
 def haikunate():
