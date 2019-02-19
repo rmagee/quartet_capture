@@ -25,7 +25,6 @@ from pydoc import locate
 from django.utils.translation import gettext as _
 from django.db.models import Model
 
-
 logger = logging.getLogger('quartet_capture')
 
 
@@ -436,6 +435,32 @@ class Step(TaskMessaging, metaclass=ABCMeta):
             )
         return ret
 
+    def get_integer_parameter(self, parameter_name: str,
+                              default: str,
+                              raise_exception: bool = False):
+        """
+        A helper function that will cast a parameter configuration to an
+        integer value since all parameters are stored as strings in the
+        database.
+        :param parameter_name: The name of the parameter from which the
+        value should be obtained.
+        :param default: If the parameter is not found and raise_exception is
+        set to False then this value will be returned.
+        :param raise_exception: If the parameter is not configured, an
+        exception will be raised.
+        :return: The value of the parameter or the default value.
+        """
+        ret = self.parameters.get(parameter_name, default=default)
+        if not ret and raise_exception:
+            raise self.ParameterNotFoundError(
+                'Parameter with name %s could '
+                'not be found in the parameters'
+                'list.  Make sure this parameter'
+                ' is configured in the Step\'s '
+                'parameters settings.' % parameter_name
+            )
+        return int(ret)
+
     def get_boolean_parameter(self, parameter_name: str,
                               default: bool = False,
                               raise_exception: bool = False):
@@ -527,7 +552,8 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         '''
         pass
 
-def _rename_model(model_instance: Model, model_type, new_rule_name = None):
+
+def _rename_model(model_instance: Model, model_type, new_rule_name=None):
     i = 1
     new_rule_name = "%s_copy_%s" % (model_instance.name, i) or new_rule_name
     while model_type.objects.filter(name=new_rule_name).exists():
@@ -535,7 +561,8 @@ def _rename_model(model_instance: Model, model_type, new_rule_name = None):
         new_rule_name = "%s_copy_%s" % (model_instance.name, i)
     model_instance.name = new_rule_name
 
-def clone_rule(rule_name: str, new_rule_name:str):
+
+def clone_rule(rule_name: str, new_rule_name: str):
     """
     Clones a rule. If no new rule name is selected, the new rule name
     will be [rule_name] (n) - where rule_name is the original name and
@@ -577,5 +604,3 @@ def clone_rule(rule_name: str, new_rule_name:str):
             new_sp.step = new_step
             new_sp.save()
     return new_rule
-
-
