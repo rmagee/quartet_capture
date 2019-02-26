@@ -13,34 +13,34 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 adjectives = [
-    'aged', 'ancient', 'autumn', 'billowing', 'bitter', 'black', 'blue',
+    'advancing', 'ancient', 'autumn', 'billowing', 'bitter', 'black', 'blue',
     'bold',
     'broad', 'broken', 'calm', 'cold', 'cool', 'crimson', 'curly', 'deft',
     'dark', 'dawn', 'dim', 'divine', 'dry', 'empty', 'falling', 'fancy',
     'flat', 'floral', 'fragrant', 'frosty', 'grey', 'green', 'hidden',
     'holy',
     'icy', 'jolly', 'late', 'lingering', 'left', 'lively', 'legal', 'lucky',
-    'misty', 'morning', 'muddy', 'mute', 'nameless', 'noisy', 'odd', 'olive',
+    'misty', 'morning', 'maroon', 'mute', 'nameless', 'noisy', 'open', 'olive',
     'orange', 'patient', 'plain', 'polished', 'proud', 'punctual', 'quiet',
     'rapid',
-    'raspy', 'red', 'restless', 'rough', 'round', 'royal', 'shiny', 'shrill',
-    'shy', 'silent', 'small', 'snowy', 'soft', 'solitary', 'sparkling',
+    'raspy', 'rapid', 'restless', 'raining', 'rectangular', 'royal', 'shining', 'shrill',
+    'sole', 'silent', 'stone', 'snowy', 'soft', 'solitary', 'sparkling',
     'spring',
     'square', 'steep', 'still', 'summer', 'super', 'shining', 'tall',
     'thundering',
     'tenacious', 'twilight', 'wandering', 'weathered', 'white', 'wild', 'winter',
     'wispy',
-    'withered', 'yellow', 'yonder'
+    'withered', 'yeadon'
 ]
 
 nouns = [
-    'art', 'band', 'bar', 'base', 'bird', 'block', 'boat', 'bonus',
-    'bread', 'breeze', 'brook', 'car', 'butterfly', 'cake', 'cell', 'calendar',
-    'cloud', 'credit', 'darkness', 'dawn', 'dew', 'disk', 'dream', 'dust',
+    'art', 'band', 'bar', 'base', 'brick', 'block', 'boat', 'bonus',
+    'bread', 'breeze', 'brook', 'car', 'butterfly', 'cone', 'cell', 'calendar',
+    'cloud', 'credit', 'darkness', 'dawn', 'dam', 'disk', 'dream', 'dust',
     'feather', 'field', 'fire', 'firefly', 'factory', 'fog', 'forest', 'frog',
-    'frost', 'glade', 'glitter', 'grass', 'hall', 'hat', 'haze', 'heart',
+    'frost', 'glade', 'glitter', 'grass', 'hall', 'hat', 'haze', 'home',
     'hill', 'king', 'lab', 'lake', 'leaf', 'limit', 'math', 'meadow',
-    'mode', 'moon', 'morning', 'mountain', 'mouse', 'mud', 'night', 'paper',
+    'mode', 'moon', 'morning', 'mountain', 'mist', 'mud', 'night', 'paper',
     'pine', 'poetry', 'pond', 'quilt', 'rain', 'recipe', 'resonance', 'rice',
     'river', 'sail', 'scene', 'sea', 'shadow', 'shape', 'silence', 'sky',
     'smoke', 'snow', 'snowflake', 'sound', 'star', 'sun', 'sun', 'sunset',
