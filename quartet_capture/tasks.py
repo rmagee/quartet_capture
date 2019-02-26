@@ -20,6 +20,7 @@ from typing import List
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 from django.utils.timezone import datetime
+from django.db.utils import IntegrityError
 from django.core.files.storage import get_storage_class
 from celery import shared_task
 from quartet_capture.errors import RuleNotFound
@@ -142,6 +143,8 @@ def create_and_queue_task(data, rule_name: str,
             # queue up the task using celery
             execute_queued_task.delay(task_name=task.name, user_id=user_id)
         return task
+    except IntegrityError:
+        logger.exception('There was an error creating and queuing the task.')
     except DBRule.DoesNotExist:
         raise RuleNotFound(
             _('The Rule with name %s could not be found.  Please check '
