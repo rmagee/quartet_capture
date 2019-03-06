@@ -19,11 +19,11 @@ adjectives = [
     'dark', 'dawn', 'dim', 'divine', 'dry', 'empty', 'falling', 'fancy',
     'flat', 'floral', 'fragrant', 'frosty', 'grey', 'green', 'hidden',
     'holy',
-    'icy', 'jolly', 'late', 'lingering', 'left', 'lively', 'legal', 'lucky',
-    'misty', 'morning', 'maroon', 'mute', 'nameless', 'noisy', 'open', 'olive',
-    'orange', 'patient', 'plain', 'polished', 'proud', 'punctual', 'quiet',
+    'icy', 'intrepid', 'late', 'lost', 'left', 'lively', 'legal', 'opaque',
+    'misty', 'morning', 'maroon', 'mute', 'nameless', 'natural', 'open', 'olive',
+    'orange', 'patient', 'plain', 'slow', 'solitary', 'punctual', 'quiet',
     'rapid',
-    'raspy', 'rapid', 'restless', 'raining', 'rectangular', 'royal', 'shining', 'shrill',
+    'raining', 'remaining', 'bright', 'staid', 'rectangular', 'royal', 'shining', 'safe',
     'sole', 'silent', 'stone', 'snowy', 'soft', 'solitary', 'sparkling',
     'spring',
     'square', 'steep', 'still', 'summer', 'super', 'shining', 'tall',
@@ -34,17 +34,17 @@ adjectives = [
 ]
 
 nouns = [
-    'art', 'band', 'bar', 'base', 'brick', 'block', 'boat', 'bonus',
-    'bread', 'breeze', 'brook', 'car', 'butterfly', 'cone', 'cell', 'calendar',
+    'art', 'band', 'bar', 'base', 'brick', 'block', 'boat', 'brake',
+    'wall', 'breeze', 'brook', 'car', 'speaker', 'cone', 'cell', 'calendar',
     'cloud', 'credit', 'darkness', 'dawn', 'dam', 'disk', 'dream', 'dust',
-    'feather', 'field', 'fire', 'firefly', 'factory', 'fog', 'forest', 'frog',
+    'feather', 'field', 'fire', 'firefly', 'factory', 'fog', 'forest', 'note',
     'frost', 'glade', 'glitter', 'grass', 'hall', 'hat', 'haze', 'home',
     'hill', 'king', 'lab', 'lake', 'leaf', 'limit', 'math', 'meadow',
     'mode', 'moon', 'morning', 'mountain', 'mist', 'mud', 'night', 'paper',
     'pine', 'poetry', 'pond', 'quilt', 'rain', 'recipe', 'resonance', 'rice',
     'river', 'sail', 'scene', 'sea', 'shadow', 'shape', 'silence', 'sky',
     'smoke', 'snow', 'snowflake', 'sound', 'star', 'sun', 'sun', 'sunset',
-    'surf', 'term', 'thunder', 'tea', 'tree', 'truth', 'union', 'unit',
+    'surf', 'term', 'thunder', 'tea', 'travel', 'time', 'union', 'string',
     'violet', 'voice', 'water', 'waterfall', 'wave', 'wildflower', 'wind',
     'water'
 ]
