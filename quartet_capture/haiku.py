@@ -15,9 +15,9 @@
 adjectives = [
     'advancing', 'ancient', 'autumn', 'billowing', 'bitter', 'black', 'blue',
     'bold',
-    'broad', 'broken', 'calm', 'cold', 'cool', 'crimson', 'curly', 'deft',
-    'dark', 'dawn', 'dim', 'divine', 'dry', 'empty', 'falling', 'fancy',
-    'flat', 'floral', 'fragrant', 'frosty', 'grey', 'green', 'hidden',
+    'broad', 'broken', 'close', 'cold', 'cool', 'crimson', 'certain', 'deft',
+    'dark', 'dawn', 'different', 'divine', 'dry', 'empty', 'falling', 'fancy',
+    'flat', 'flying', 'stoic', 'frosty', 'grey', 'green', 'hidden',
     'holy',
     'icy', 'intrepid', 'late', 'lost', 'left', 'lively', 'legal', 'opaque',
     'misty', 'morning', 'maroon', 'mute', 'nameless', 'natural', 'open', 'olive',
@@ -27,18 +27,18 @@ adjectives = [
     'sole', 'silent', 'stone', 'snowy', 'soft', 'solitary', 'sparkling',
     'spring',
     'square', 'steep', 'still', 'summer', 'super', 'shining', 'tall',
-    'thundering',
+    'true',
     'tenacious', 'twilight', 'wandering', 'weathered', 'white', 'wild', 'winter',
-    'wispy',
-    'withered', 'yeadon'
+    'whole',
+    'popular', 'yeadon'
 ]
 
 nouns = [
     'art', 'band', 'bar', 'base', 'brick', 'block', 'boat', 'brake',
     'wall', 'breeze', 'brook', 'car', 'speaker', 'cone', 'cell', 'calendar',
     'cloud', 'credit', 'darkness', 'dawn', 'dam', 'disk', 'dream', 'dust',
-    'feather', 'field', 'fire', 'firefly', 'factory', 'fog', 'forest', 'note',
-    'frost', 'glade', 'glitter', 'grass', 'hall', 'hat', 'haze', 'home',
+    'feather', 'field', 'fire', 'match', 'factory', 'fog', 'forest', 'note',
+    'frost', 'glade', 'glitter', 'grass', 'hall', 'haven', 'haze', 'home',
     'hill', 'king', 'lab', 'lake', 'leaf', 'limit', 'math', 'meadow',
     'mode', 'moon', 'morning', 'mountain', 'mist', 'mud', 'night', 'paper',
     'pine', 'poetry', 'pond', 'quilt', 'rain', 'recipe', 'resonance', 'rice',

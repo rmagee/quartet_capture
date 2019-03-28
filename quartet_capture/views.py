@@ -20,15 +20,17 @@ from django.http.response import HttpResponse
 from django.core.files import storage
 from django.conf import settings
 from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions
 from rest_framework.schemas import ManualSchema
 from rest_framework_xml.renderers import XMLRenderer
+from rest_framework_xml.parsers import XMLParser
 
 from quartet_capture.rules import clone_rule
+from quartet_capture.parsers import RawParser
 from quartet_capture.errors import TaskExecutionError
 from quartet_capture.tasks import execute_queued_task, create_and_queue_task, \
     get_rules_by_filter
@@ -158,7 +160,7 @@ class CaptureInterface(APIView):
     name will be returned.
     '''
     # set the parser to handle HTTP post / upload
-    parser_classes = (MultiPartParser,)
+    parser_classes = (MultiPartParser, RawParser)
     # this is the throttle scope for this view
     throttle_scope = 'capture_upload'
     # sentry queryset for permissions
@@ -170,10 +172,7 @@ class CaptureInterface(APIView):
         # get the message from the request
         files = request.FILES if len(request.FILES) > 0 else request.POST
         if len(files) == 0:
-            raise exceptions.APIException(
-                'No files were posted.',
-                status.HTTP_400_BAD_REQUEST
-            )
+            files = self._inspect_data(request)
         elif len(files) > 1:
             raise exceptions.APIException(
                 'Only one file may be posted at a time.',
@@ -236,6 +235,24 @@ class CaptureInterface(APIView):
                     user_id=user_id
                 )
             return Response(ret.name, status=status.HTTP_201_CREATED)
+
+
+    def _inspect_data(self, request: Request):
+        """
+        Will take the raw data if a multipart upload was not specified.
+        Just simulates what a file input would look like.
+        :param request: The inbound request.
+        :return: A dictionary with a single entry with the key `raw`
+        and the value of the request.data field.
+        """
+        if len(request.data) > 0:
+            return {'raw':request.data}
+        else:
+            raise exceptions.APIException(
+                'No data was posted.',
+                status.HTTP_400_BAD_REQUEST
+            )
+
 
     def _get_user_id(self, request) -> int:
         '''
