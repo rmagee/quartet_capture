@@ -27,38 +27,31 @@ from quartet_capture.tasks import create_and_queue_task
 import logging
 from shutil import chown
 
-DEFAULT_INBOUND_FILE_DIRECTORY = "/var/sftp/inbound/"
-DEFAULT_INBOUND_FILE_DIRECTORY_PROCESSED = "/var/quartet/inbound-processed/"
-
-inbound_file_directory = getattr(settings,
-                                 'INBOUND_FILE_DIRECTORY',
-                                 DEFAULT_INBOUND_FILE_DIRECTORY)
-
-inbound_file_directory_processed = getattr(settings,
-                                           'INBOUND_FILE_DIRECTORY_PROCESSED',
-                                           DEFAULT_INBOUND_FILE_DIRECTORY_PROCESSED)
-
-
-
 
 class ProcessInboundFiles(FileSystemEventHandler):
     '''
     Processes files that were created.
     '''
+
+    def __init__(self, inbound_file_directory_processed) -> None:
+        super().__init__()
+        self.inbound_file_directory_processed = inbound_file_directory_processed
+
     def create_task_for_inbound_file(self, filepath: str, rule_name: str):
         '''
         Sends the contents of the file to be processed.
         '''
         with open(filepath, "rb") as f:
             data = f.read()
-            logging.info("Creating task for file %s and rule %s" % (filepath, rule_name))
+            logging.info("Creating task for file %s and rule %s" % (
+                filepath, rule_name))
             create_and_queue_task(data=data,
                                   rule_name=rule_name,
                                   task_type="Input",
                                   run_immediately=False,
                                   initial_status="QUEUED",
                                   task_parameters=[])
-                           
+
     def on_created(self, event):
         '''
         Moves file received and creates a task for it.
@@ -71,9 +64,10 @@ class ProcessInboundFiles(FileSystemEventHandler):
             path = os.path.split(event.src_path)
             fname = path[1]
             rule_directory = path[0].split(os.sep)[-1]
-            processing_file_path = os.path.join(inbound_file_directory_processed,
-                                                rule_directory,
-                                                fname + "-" + str(uuid.uuid1()))
+            processing_file_path = os.path.join(
+                self.inbound_file_directory_processed,
+                rule_directory,
+                fname + "-" + str(uuid.uuid1()))
             # moving the file to processed folder, with unique name.
             os.rename(event.src_path, processing_file_path)
             logging.info("Processing %s" % processing_file_path)
@@ -81,13 +75,16 @@ class ProcessInboundFiles(FileSystemEventHandler):
             try:
                 rule = Rule.objects.get(name=rule_name)
             except Rule.DoesNotExist:
-                logging.info("Rule not found %s for file %s" % (rule_name, processing_file_path))
+                logging.info("Rule not found %s for file %s" % (
+                    rule_name, processing_file_path))
                 reset_queries()
                 return
             self.create_task_for_inbound_file(processing_file_path, rule_name)
             reset_queries()
         except Exception as e:
-            logging.warning("An exception occurred while processing creation event, recovering. %s" % str(e))
+            logging.warning(
+                "An exception occurred while processing creation event, recovering. %s" % str(
+                    e))
             reset_queries()
 
     def on_modified(self, event):
@@ -95,11 +92,11 @@ class ProcessInboundFiles(FileSystemEventHandler):
 
 
 class Command(BaseCommand):
-    help = _('Monitors a folder for files added, process them to the appropriate rule based on folder')
-    default_inbound_path = "/var/quartet/inbound/"
-    default_processed_directory = "/var/quartet/inbound-processed/"
-    
-    def create_folders_for_rules(self, root_directory):
+    help = _(
+        'Monitors a folder for files added, process them to the appropriate '
+        'rule based on folder')
+
+    def create_folders_for_rules(self, root_directory, group_name):
         '''
         Automatically creates a folder for a given rule.
         '''
@@ -112,24 +109,44 @@ class Command(BaseCommand):
             except:
                 logging.info("Creating directory %s" % directory_path)
                 os.mkdir(directory_path)
-                chown(directory_path, group="sftp")
+                chown(directory_path, group=group_name)
                 os.chmod(directory_path, 0o775)
 
     def handle(self, *args, **options):
-        self.create_folders_for_rules(inbound_file_directory)
-        self.create_folders_for_rules(inbound_file_directory_processed)
-        event_handler = ProcessInboundFiles()
+        inbound_file_directory = options['inbound_dir']
+        inbound_file_directory_processed = options['processed_dir']
+        group_name = options['group']
+        self.create_folders_for_rules(inbound_file_directory, group_name)
+        self.create_folders_for_rules(inbound_file_directory_processed,
+                                      group_name)
+        event_handler = ProcessInboundFiles(inbound_file_directory_processed)
         observer = Observer()
-        observer.schedule(event_handler, inbound_file_directory, recursive=True)
+        observer.schedule(event_handler, inbound_file_directory,
+                          recursive=True)
         observer.start()
         try:
             while True:
-                self.create_folders_for_rules(inbound_file_directory)
-                self.create_folders_for_rules(inbound_file_directory_processed)
+                self.create_folders_for_rules(inbound_file_directory,
+                                              group_name)
+                self.create_folders_for_rules(inbound_file_directory_processed,
+                                              group_name)
                 reset_queries()
                 time.sleep(120)
         except:
             logging.info("An error occurred, watcher will stop.")
             observer.stop()
-            raise            
-        observer.join()
+            raise
+        finally:
+            observer.join()
+
+    def add_arguments(self, parser):
+        parser.add_argument('inbound_dir', help='The inbound directory to'
+                                                ' monitor.',
+                            )
+        parser.add_argument('processed_dir', help='The directory to store '
+                                                  'files in after '
+                                                  'processing',
+                            )
+        parser.add_argument('group', help='The default group to assign '
+                                          'ownership of new directories '
+                                          'to')
