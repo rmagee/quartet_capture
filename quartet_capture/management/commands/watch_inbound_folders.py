@@ -12,20 +12,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
+import logging
 import os
 import time
 import uuid
-from datetime import datetime
-from django.utils.translation import gettext as _
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import reset_queries
-from quartet_capture.models import Rule, Task, TaskHistory, TaskParameter
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-from quartet_capture.tasks import create_and_queue_task
-import logging
+from django.utils.translation import gettext as _
 from shutil import chown
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+
+from quartet_capture.models import Rule
+from quartet_capture.tasks import create_and_queue_task
 
 
 class ProcessInboundFiles(FileSystemEventHandler):
