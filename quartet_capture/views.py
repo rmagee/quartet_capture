@@ -34,7 +34,7 @@ from quartet_capture.parsers import RawParser
 from quartet_capture.errors import TaskExecutionError
 from quartet_capture.tasks import execute_queued_task, create_and_queue_task, \
     get_rules_by_filter
-from quartet_capture.models import Rule, Task, TaskParameter
+from quartet_capture.models import Rule, Task, TaskParameter, Filter
 
 import logging
 
@@ -194,8 +194,18 @@ class CaptureInterface(APIView):
                              filter_name)
                 return_all_rules = request.query_params.get(
                     'return-all-rules') or DEFAULT_RETURN_ALL_RULES
-                rules = get_rules_by_filter(filter_name, message,
-                                            return_all_rules)
+                try:
+                    rules = get_rules_by_filter(filter_name, message,
+                                                return_all_rules)
+                except Filter.DoesNotExist:
+                    exc = exceptions.APIException(
+                        'The filter %s does not exist.  Make sure your '
+                        'filter parameter is correct and corresponds with'
+                        ' the name of a valid filter on this instance.'
+                        % filter_name
+                    )
+                    exc.status_code = status.HTTP_400_BAD_REQUEST
+                    raise exc
             # get the rule from the query parameter
             if len(rules) == 0:
                 logger.debug('No rules were found.')
@@ -227,15 +237,23 @@ class CaptureInterface(APIView):
                 # create a task and get the task name to return to the
                 # calling application
                 user_id = self._get_user_id(request)
-                ret = create_and_queue_task(
-                    message,
-                    rule_name,
-                    run_immediately=run,
-                    task_parameters=self._get_task_parameters(request),
-                    user_id=user_id
-                )
-            return Response(ret.name, status=status.HTTP_201_CREATED)
+                try:
+                    ret = create_and_queue_task(
+                        message,
+                        rule_name,
+                        run_immediately=run,
+                        task_parameters=self._get_task_parameters(request),
+                        user_id=user_id
+                    )
+                except Exception as err:
+                    exc = exceptions.APIException(
+                        'Error in rule %s: %s' % (
+                        rule_name, ','.join(err.args))
+                    )
+                    exc.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+                    raise exc
 
+            return Response(ret.name, status=status.HTTP_201_CREATED)
 
     def _inspect_data(self, request: Request):
         """
@@ -246,13 +264,12 @@ class CaptureInterface(APIView):
         and the value of the request.data field.
         """
         if len(request.data) > 0:
-            return {'raw':request.data}
+            return {'raw': request.data}
         else:
             raise exceptions.APIException(
                 'No data was posted.',
                 status.HTTP_400_BAD_REQUEST
             )
-
 
     def _get_user_id(self, request) -> int:
         '''

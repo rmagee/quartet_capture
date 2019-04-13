@@ -51,7 +51,8 @@ def execute_rule(message: bytes, db_task: DBTask):
 
 
 @shared_task(name='execute_queued_task')
-def execute_queued_task(task_name: str, user_id: int = None):
+def execute_queued_task(task_name: str, user_id: int = None,
+                        raise_exception=False):
     '''
     Queues up a rule for execution by saving the file to file storage
     and putting the descriptor and rule name on a queue.
@@ -86,6 +87,8 @@ def execute_queued_task(task_name: str, user_id: int = None):
         logger.exception('Could not execute task with name %s', task_name)
         db_task.status = 'FAILED'
         db_task.save()
+        if raise_exception:
+            raise
     finally:
         db_task.end = datetime.now()
         end = time.time()
@@ -138,7 +141,8 @@ def create_and_queue_task(data, rule_name: str,
             task_parameter.save()
         if run_immediately:
             # execute in line (skips the rule engine and celery)
-            execute_queued_task(task_name=task.name, user_id=user_id)
+            execute_queued_task(task_name=task.name, user_id=user_id,
+                                raise_exception=True)
         else:
             # queue up the task using celery
             execute_queued_task.delay(task_name=task.name, user_id=user_id)

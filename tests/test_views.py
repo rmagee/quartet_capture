@@ -118,7 +118,9 @@ class ViewTest(APITestCase):
         self.assertEqual(test[:3], "<ep")
 
     def test_execute_view_with_filter(self):
-        self._create_filter()
+        filter, rf_1, rf_2, rf_3 = self._create_filter()
+        rf_2.search_value = 'asdfasdfasdfasdf'
+        rf_2.save()
         url = reverse('quartet-capture')
         data = self._get_test_data()
         response = self.client.post(
@@ -238,12 +240,7 @@ class ViewTest(APITestCase):
             '{0}?filter=utf&run-immediately=true'.format(url),
             {'file': data},
             format='multipart')
-        self.assertEqual(response.status_code, 201)
-        task_name = response.data
-        url = reverse('execute-task', kwargs={"task_name": task_name})
-        response = self.client.get(
-            '{0}?run-immediately=true'.format(url)
-        )
+        self.assertEqual(response.status_code, 500)
         rules = get_rules_by_filter(filter_name='utf', message=data)
         self.assertEqual(len(rules), 2, "2 rules should be returned.")
         self.assertIn('epcis', rules)
