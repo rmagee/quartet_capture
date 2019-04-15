@@ -22,7 +22,8 @@ QU4TET CAPTURE
         Y88b  d88P       888  888           888     Y88b. .d88P 888  T88b  888
          "Y8888P"        888  888           888      "Y88888P"  888   T88b 8888888888
 
-A capture and queuing interface for QU4RTET.  This package defines the
+A capture and queuing interface for the QU4RTET open source EPCIS platform.
+This package defines the
 generic structure of the QU4RTET rule engine and defines the base classes
 necessary for use when extending the functionality of QU4RTET.
 
