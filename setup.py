@@ -59,7 +59,7 @@ setup(
     install_requires=["haikunator"],
     license="GPLv3",
     zip_safe=False,
-    keywords='quartet_capture',
+    keywords='quartet_capture QU4RTET EPCIS open-source',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Framework :: Django',
