@@ -21,7 +21,7 @@ from django.db import reset_queries
 from django.utils.translation import gettext as _
 from shutil import chown
 from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 
 from quartet_capture.models import Rule
 from quartet_capture.tasks import create_and_queue_task
@@ -109,9 +109,11 @@ class ProcessInboundFiles(FileSystemEventHandler):
         success_count = 0
         while success_count < success_tries and current_tries < tries:
             current_tries += 1
-            if cursize == os.path.getsize(file_path):
+            fsize = os.path.getsize(file_path)
+            if cursize == fsize:
                 success_count += 1
             else:
+                cursize = fsize
                 success_count = 0
             time.sleep(try_interval)
         return success_count == success_tries
@@ -152,7 +154,7 @@ class Command(BaseCommand):
         self.create_folders_for_rules(inbound_file_directory_processed,
                                       group_name)
         event_handler = ProcessInboundFiles(inbound_file_directory_processed)
-        observer = Observer()
+        observer = PollingObserver()
         observer.schedule(event_handler, inbound_file_directory,
                           recursive=True)
         observer.start()
