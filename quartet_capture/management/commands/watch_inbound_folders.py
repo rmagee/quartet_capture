@@ -60,34 +60,67 @@ class ProcessInboundFiles(FileSystemEventHandler):
                 logging.info("%s is a directory, ignoring" % event.src_path)
                 return
             logging.info("A file was created %s" % event.src_path)
-            path = os.path.split(event.src_path)
-            fname = path[1]
-            rule_directory = path[0].split(os.sep)[-1]
-            processing_file_path = os.path.join(
-                self.inbound_file_directory_processed,
-                rule_directory,
-                fname + "-" + str(uuid.uuid1()))
-            # moving the file to processed folder, with unique name.
-            os.rename(event.src_path, processing_file_path)
-            logging.info("Processing %s" % processing_file_path)
-            rule_name = rule_directory.replace('-', ' ')
-            try:
-                rule = Rule.objects.get(name=rule_name)
-            except Rule.DoesNotExist:
-                logging.info("Rule not found %s for file %s" % (
-                    rule_name, processing_file_path))
+            if self.check_for_file_expansion(event.src_path):
+                path = os.path.split(event.src_path)
+                fname = path[1]
+                rule_directory = path[0].split(os.sep)[-1]
+                processing_file_path = os.path.join(
+                    self.inbound_file_directory_processed,
+                    rule_directory,
+                    fname + "-" + str(uuid.uuid1()))
+                # moving the file to processed folder, with unique name.
+                os.rename(event.src_path, processing_file_path)
+                logging.info("Processing %s" % processing_file_path)
+                rule_name = rule_directory.replace('-', ' ')
+                try:
+                    rule = Rule.objects.get(name=rule_name)
+                except Rule.DoesNotExist:
+                    logging.info("Rule not found %s for file %s" % (
+                        rule_name, processing_file_path))
+                    reset_queries()
+                    return
+                self.create_task_for_inbound_file(processing_file_path,
+                                                  rule_name)
                 reset_queries()
-                return
-            self.create_task_for_inbound_file(processing_file_path, rule_name)
-            reset_queries()
+            else:
+                raise self.FileIncompleteException('The file could not be '
+                                                   'read for processing since '
+                                                   'it was still being written')
         except Exception as e:
             logging.warning(
                 "An exception occurred while processing creation event, recovering. %s" % str(
                     e))
             reset_queries()
 
+    def check_for_file_expansion(self, file_path, tries=120, try_interval=.5,
+                                 success_tries=6):
+        """
+        If the file is growing it hasn't been fully written out yet.
+        :param tries: The max number of times to check
+        :param tries: The number of tries before stopping
+        :param try_interval: The interval between tries.
+        :param success_tries: The number of consecutive successes that must
+        occur before it can be determined the file isn't growing.
+        :return: True if the file isn't growing false if it still was
+        showing growth past the tries limit.
+        """
+        current_tries = 0
+        cursize = os.path.getsize(file_path)
+        success_count = 0
+        while success_count < success_tries and current_tries < tries:
+            current_tries += 1
+            if cursize == os.path.getsize(file_path):
+                success_count += 1
+            else:
+                success_count = 0
+            time.sleep(try_interval)
+        return success_count == success_tries
+
     def on_modified(self, event):
         logging.info("A file was modified %s" % event.src_path)
+
+    class FileIncompleteException(Exception):
+        pass
 
 
 class Command(BaseCommand):
