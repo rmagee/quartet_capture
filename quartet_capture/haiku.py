@@ -33,7 +33,7 @@ adjectives = [
     'seismic',
     'random',
     'riparian', 'radioactive', 'variable', 'rectangular', 'reflective',
-    'relativistic'
+    'relativistic',
     'solvent', 'statistical',
     'square', 'second', 'singular', 'spectral',
     'scalar', 'soluble',
