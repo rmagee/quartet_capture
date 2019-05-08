@@ -116,7 +116,10 @@ class TaskMessage(models.Model):
         help_text=_("The message data."),
         null=False
     )
-
+    class Meta:
+        verbose_name = _('Task Message')
+        verbose_name_plural = _('Task Messages')
+        ordering = ['created']
 
 class Field(models.Model):
     '''
