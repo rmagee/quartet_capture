@@ -555,7 +555,8 @@ class Step(TaskMessaging, metaclass=ABCMeta):
 
 def _rename_model(model_instance: Model, model_type, new_rule_name=None):
     i = 1
-    new_rule_name = "%s_copy_%s" % (model_instance.name, i) or new_rule_name
+    if not new_rule_name:
+        new_rule_name = "%s_copy_%s" % (model_instance.name, i)
     while model_type.objects.filter(name=new_rule_name).exists():
         i += 1
         new_rule_name = "%s_copy_%s" % (model_instance.name, i)
