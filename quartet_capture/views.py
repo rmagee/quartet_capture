@@ -166,7 +166,7 @@ class CaptureInterface(APIView):
     # sentry queryset for permissions
     queryset = Task.objects.none()
 
-    def post(self, request: Request, format=None):
+    def post(self, request: Request, format=None, epcis=False):
         logger.info('Message from %s', getattr(request.META, 'REMOTE_HOST',
                                                'Host Info not Available'))
         # get the message from the request
@@ -209,13 +209,18 @@ class CaptureInterface(APIView):
             # get the rule from the query parameter
             if len(rules) == 0:
                 logger.debug('No rules were found.')
-                rules = [request.query_params.get('rule', None)]
+                if epcis:
+                    rules = [request.query_params.get('rule', 'EPCIS')]
+                else:
+                    rule = request.query_params.get('rule', None)
+                    if rule:
+                        rules = [rule]
             run = request.query_params.get('run-immediately', False)
             if len(rules) == 0 and not filter_name:
                 exc = exceptions.APIException(
                     'You must supply the rule Query '
                     'Parameter at the end of your request URL. '
-                    'For example: ?rule=epcis.  The quartet_capture rule '
+                    'For example: ?rule=EPCIS.  The quartet_capture rule '
                     'framework uses this value to determine how to process '
                     'your message. Otherwise, you must specify a filter name',
                 )
@@ -370,16 +375,7 @@ class EPCISCapture(CaptureInterface):
     '''
     queryset = Task.objects.none()
 
-    def post(self, request: Request):
-        message = request.FILES.get('file') or request.POST.get('file')
-        if message and not isinstance(message, str):
-            message = message.read()
-        if 'EPCISDocument' not in message:
-            raise exceptions.ParseError(
-                'The EPCIS capture interface '
-                'is for EPCIS Documents only. To submit other '
-                'types of data use the quartet-capture '
-                'interface.'
-            )
-        # TODO: perhaps more sophisticated checking?
-        return super().post(request, format)
+    def post(self, request: Request, format=None):
+        return super().post(request, format, True)
+
+
