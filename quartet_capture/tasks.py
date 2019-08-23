@@ -170,6 +170,10 @@ def get_rules_by_filter(filter_name: str, message: str,
     Default is True.
     :return: A list of rule names instances.
     '''
+
+    if not isinstance(message, str):
+        message = str(message.read())
+
     filter = Filter.objects.prefetch_related('rulefilter_set').get(
         name=filter_name)
     ret = []
