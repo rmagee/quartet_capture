@@ -94,3 +94,9 @@ Added a new view that allows users to download task data on demand via the
 2.2 January 2
 +++++++++++++
 * Happy new year, added nested rule data into the task detail API.
+
+2.7
++++
+* Updated to handle a soft timeout in the event of a celery timeout on
+  a celery configuration that is configured with a soft timeout
+  option.
