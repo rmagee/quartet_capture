@@ -23,6 +23,7 @@ from django.utils.timezone import datetime
 from django.db.utils import IntegrityError
 from django.core.files.storage import get_storage_class
 from celery import shared_task
+from celery.exceptions import SoftTimeLimitExceeded
 from quartet_capture.errors import RuleNotFound
 from quartet_capture.models import Task as DBTask, Rule as DBRule, \
     TaskHistory, Filter, RuleFilter
@@ -83,6 +84,13 @@ def execute_queued_task(task_name: str, user_id: int = None,
         # execute the rule
         c_rule.execute(data)
         db_task.status = 'FINISHED'
+    except SoftTimeLimitExceeded:
+        logger.exception('The task exceeded the configured time limit '
+                         'threshold.  Consider either raising the time '
+                         'limit in your Celery configuration and/or adjust '
+                         'your computing resources accordingly.')
+        db_task.status = 'QUEUED'
+        db_task.save()
     except Exception:
         logger.exception('Could not execute task with name %s', task_name)
         db_task.status = 'FAILED'

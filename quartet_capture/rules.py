@@ -16,12 +16,14 @@
 import traceback
 import logging
 import importlib
+import time
 from copy import deepcopy
 from datetime import datetime
 from enum import Enum
 from abc import ABCMeta, abstractmethod
 from quartet_capture import models, errors
 from pydoc import locate
+from django.conf import settings
 from django.utils.translation import gettext as _
 from django.db.models import Model
 
@@ -169,6 +171,36 @@ class RuleContext:
     @rule_name.setter
     def rule_name(self, value):
         self._rule_name = value
+
+
+class DependencyMixin:
+    def get_running_tasks(self):
+        """
+        Will return the current list of tasks that are running.
+        :return: A list of quartet_capture.models.Rule instance names.
+        """
+        running_tasks = models.Task.objects.filter(
+            status='RUNNING'
+        ).values_list('name', flat=True)
+        return list(running_tasks)
+
+    def monitor_tasks(self):
+        running_tasks = self.get_running_tasks()
+        task_interval = int(getattr(
+            settings,
+            'QUARTET_CAPTURE_WAIT_CYCLE_INTERVAL'),
+            10
+        )
+        cycles = int(getattr(
+            settings, 'QUARTET_CAPTURE_MAX_WAIT_CYCLES', 1080
+        ))
+        while tasks.count() > 0 or cycles == 0:
+            # refresh the tasks
+            tasks = models.Task.objects.filter(
+                name__in=running_tasks
+            )
+            time.sleep(task_interval)
+            cycles -= 1
 
 
 class Rule(TaskMessaging):
