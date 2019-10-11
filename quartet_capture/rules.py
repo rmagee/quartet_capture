@@ -482,7 +482,7 @@ class Step(TaskMessaging, metaclass=ABCMeta):
         exception will be raised.
         :return: The value of the parameter or the default value.
         """
-        ret = self.parameters.get(parameter_name, default=default)
+        ret = self.parameters.get(parameter_name, default)
         if not ret and raise_exception:
             raise self.ParameterNotFoundError(
                 'Parameter with name %s could '
