@@ -178,6 +178,8 @@ def get_rules_by_filter(filter_name: str, message: str,
     Default is True.
     :return: A list of rule names instances.
     '''
+    if isinstance(message, bytes):
+        message = message.decode('utf-8')
 
     if not isinstance(message, str):
         message = str(message.read())
