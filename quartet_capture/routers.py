@@ -16,16 +16,16 @@ from rest_framework.routers import DefaultRouter
 from quartet_capture import viewsets, views
 
 router = DefaultRouter()
-router.register(r'rules', viewsets.RuleViewSet, base_name='rules')
+router.register(r'rules', viewsets.RuleViewSet, basename='rules')
 router.register(r'rule-parameters', viewsets.RuleParameterViewSet,
-                base_name='rule-parameters')
-router.register(r'steps', viewsets.StepViewSet, base_name='steps')
+                basename='rule-parameters')
+router.register(r'steps', viewsets.StepViewSet, basename='steps')
 router.register(r'step-parameters', viewsets.StepParameterViewSet,
-                base_name='step-parameters')
-router.register(r'tasks', viewsets.TaskViewset, base_name='tasks')
+                basename='step-parameters')
+router.register(r'tasks', viewsets.TaskViewset, basename='tasks')
 router.register(r'task-history', viewsets.TaskHistoryViewSet,
-                base_name='task-history')
-router.register(r'filters', viewsets.FilterViewSet, base_name='filters')
+                basename='task-history')
+router.register(r'filters', viewsets.FilterViewSet, basename='filters')
 router.register(r'rule-filters', viewsets.RuleFilterViewSet,
-                base_name='rule-filters')
+                basename='rule-filters')
 urlpatterns = router.urls
