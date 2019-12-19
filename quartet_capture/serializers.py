@@ -58,7 +58,7 @@ class TaskMessageSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class UserSerializer(ModelSerializer):
+class CaptureUserSerializer(ModelSerializer):
     '''
     User Serializer for task history.
     '''
@@ -72,7 +72,7 @@ class TaskHistorySerializer(ModelSerializer):
     '''
     Default serializer for the TaskHistory model.
     '''
-    user = UserSerializer(read_only=True)
+    user = CaptureUserSerializer(read_only=True)
 
     class Meta:
         model = models.TaskHistory
