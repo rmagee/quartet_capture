@@ -40,7 +40,7 @@ adjectives = [
     'theoretical',
     'thermal', 'terrestrial', 'ultraviolet', 'viscous',
     'whole',
-    'quantum','x-axis','y-axis'
+    'quantum','xerophilous','xenodochial'
 ]
 
 nouns = [
