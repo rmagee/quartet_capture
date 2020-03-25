@@ -28,7 +28,8 @@ class FilterAdmin(admin.ModelAdmin):
 
 @admin.register(models.RuleFilter)
 class RuleFilterAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name', 'order', 'rule', 'search_type', 'default']
+    search_fields = ['name','rule__name']
 
 class StepInline(admin.StackedInline):
     model = models.Step

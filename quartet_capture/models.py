@@ -362,6 +362,7 @@ class RuleFilter(models.Model):
     description = models.CharField(
         max_length=500,
         null=True,
+        blank=True,
         help_text=_('A short description of what this rule filter does.'),
         verbose_name=_('Description')
     )
@@ -396,7 +397,7 @@ class RuleFilter(models.Model):
                     "a string that can be matched within the inbound data."),
         choices=RULE_FILTER_CHOICES,
         null=False,
-        default='regex'
+        default='search'
     )
     reverse = models.BooleanField(
         default=False,
@@ -421,7 +422,7 @@ class RuleFilter(models.Model):
         null=False
     )
     break_on_true = models.BooleanField(
-        default=False,
+        default=True,
         verbose_name=_("Break on True"),
         help_text=_(
             "If this Rule Filter finds its search value and there are more "
@@ -437,3 +438,4 @@ class RuleFilter(models.Model):
     class Meta:
         ordering = ['order']
         unique_together = ['order', 'filter']
+        verbose_name=_('Rule Filter')
