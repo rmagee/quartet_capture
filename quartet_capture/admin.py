@@ -74,6 +74,7 @@ class TaskAdmin(admin.ModelAdmin):
         TaskHistoryInline,
         TaskMessageInline,
     ]
+    search_fields = ['rule__name', 'name', 'status', 'status_changed']
     list_display = ('status_changed', 'name', 'rule', 'status', 'execution_time')
     ordering = ('-status_changed',)
 
