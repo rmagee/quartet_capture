@@ -172,6 +172,8 @@ class RuleContext:
     def rule_name(self, value):
         self._rule_name = value
 
+    def __str__(self):
+        return str(self._context)
 
 class DependencyMixin:
     def get_running_tasks(self):
