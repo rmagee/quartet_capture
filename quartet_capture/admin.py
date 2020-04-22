@@ -52,6 +52,7 @@ class StepAdmin(admin.ModelAdmin):
         StepParameterInline
     ]
     list_display = ('name', 'rule', 'order', 'description')
+    search_fields = ['name', 'rule__name']
 
 class TaskMessageInline(admin.TabularInline):
     model = models.TaskMessage
