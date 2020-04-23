@@ -29,6 +29,7 @@ from quartet_capture.models import Task as DBTask, Rule as DBRule, \
     TaskHistory, Filter, RuleFilter
 from quartet_capture.rules import Rule
 import time
+from quartet_capture.models import haikunate
 
 StringList = List[str]
 logger = getLogger('quartet_capture')
@@ -145,7 +146,13 @@ def create_and_queue_task(data, rule_name: str,
             data = io.BytesIO(data)
         task.location = file_store().save(name=filename, content=data)
         task.status = initial_status
-        task.save()
+        try:
+            task.save()
+        except IntegrityError:
+            logger.warning('There was a task name conflict trying to generate '
+                           'a new one...')
+            task.name = haikunate()
+            task.save()
         for task_parameter in task_parameters:
             task_parameter.task = task
             task_parameter.save()
