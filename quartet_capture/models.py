@@ -20,8 +20,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from model_utils import models as utils
 from model_utils import Choices
-from quartet_capture.haiku import adjectives, nouns
-from haikunator import Haikunator
+from quartet_capture.haiku import adjectives, nouns, Haikunator
 
 haiku = Haikunator(adjectives=adjectives, nouns=nouns)
 
@@ -32,13 +31,13 @@ def haikunate():
     it could not be used directly as a default callable for
     a django field...hence this function.
     '''
+    lock = Lock()
+    lock.acquire()
     try:
-        lock = Lock()
-        lock.acquire()
         ret = haiku.haikunate(token_length=8, token_hex=True)
+        return ret
     finally:
         lock.release()
-    return ret
 
 
 SEVERITY_CHOICES = (

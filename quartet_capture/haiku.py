@@ -12,6 +12,43 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
+from haikunator import Haikunator as H
+import uuid
+
+
+class Haikunator(H):
+    """
+    Override the random element generation.
+    """
+    def haikunate(self, delimiter='-', token_length=4, token_hex=False, token_chars='0123456789'):
+        """
+        Generate heroku-like random names to use in your python applications
+
+        :param delimiter: Delimiter
+        :param token_length: TokenLength
+        :param token_hex: TokenHex
+        :param token_chars: TokenChars
+        :type delimiter: str
+        :type token_length: int
+        :type token_hex: bool
+        :type token_chars: str
+        :return: heroku-like random string
+        :rtype: str
+        """
+        if token_hex:
+            token_chars = '0123456789abcdef'
+
+        adjective = self._random_element(self._adjectives)
+        noun = self._random_element(self._nouns)
+
+        sections = [adjective, noun, self._token()]
+        return delimiter.join(filter(None, sections))
+
+    def _token(self):
+        val = hex(hash(uuid.uuid4()))
+        return str(val[2:])
+
+
 adjectives = [
     'active', 'alveolar', 'autumn', 'bonded', 'comparative', 'conchoidal',
     'convective',
@@ -40,7 +77,7 @@ adjectives = [
     'theoretical',
     'thermal', 'terrestrial', 'ultraviolet', 'viscous',
     'whole',
-    'quantum','xerophilous','xenodochial'
+    'quantum', 'xerophilous', 'xenodochial'
 ]
 
 nouns = [
