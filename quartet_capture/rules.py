@@ -101,6 +101,7 @@ class TaskMessaging:
             message = args[0] % tuple(args[1:])
         else:
             message = args[0]
+        logger.debug(message)
         try:
             if not (task or self.task):
                 raise models.Task.DoesNotExist('No task was supplied.')
@@ -174,6 +175,7 @@ class RuleContext:
 
     def __str__(self):
         return str(self._context)
+
 
 class DependencyMixin:
     def get_running_tasks(self):
