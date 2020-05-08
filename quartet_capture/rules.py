@@ -245,7 +245,7 @@ class Rule(TaskMessaging):
 
         :param data: The data to be handled by each of the steps in the rule.
         '''
-        self.info(_('Beginning execution of the Rule.'))
+        self.info(_('Beginning execution of Rule {0}'.format(self.db_rule.name)))
         try:
             if len(self.steps) == 0:
                 self.error(
