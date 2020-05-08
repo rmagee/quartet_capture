@@ -240,11 +240,9 @@ class ViewTest(APITestCase):
             '{0}?filter=utf&run-immediately=true'.format(url),
             {'file': data},
             format='multipart')
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 201)
         rules = get_rules_by_filter(filter_name='utf', message=data)
-        self.assertEqual(len(rules), 2, "2 rules should be returned.")
-        self.assertIn('epcis', rules)
-        self.assertIn('epcis_2', rules)
+        self.assertEqual(len(rules), 1, "1 rules should be returned.")
 
     def test_no_rule_capture(self):
         self._create_rule()

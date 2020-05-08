@@ -215,7 +215,8 @@ class CaptureInterface(APIView):
                     rule = request.query_params.get('rule', None)
                     if rule:
                         rules = [rule]
-            run = request.query_params.get('run-immediately', False)
+            run = True if request.query_params.get('run-immediately') in \
+                          ['true', 'True'] else False
             if len(rules) == 0 and not filter_name:
                 exc = exceptions.APIException(
                     'You must supply the rule Query '

@@ -28,7 +28,8 @@ class FilterAdmin(admin.ModelAdmin):
 
 @admin.register(models.RuleFilter)
 class RuleFilterAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name', 'order', 'rule', 'search_type', 'default']
+    search_fields = ['name','rule__name']
 
 class StepInline(admin.StackedInline):
     model = models.Step
@@ -51,6 +52,7 @@ class StepAdmin(admin.ModelAdmin):
         StepParameterInline
     ]
     list_display = ('name', 'rule', 'order', 'description')
+    search_fields = ['name', 'rule__name']
 
 class TaskMessageInline(admin.TabularInline):
     model = models.TaskMessage
@@ -73,6 +75,7 @@ class TaskAdmin(admin.ModelAdmin):
         TaskHistoryInline,
         TaskMessageInline,
     ]
+    search_fields = ['rule__name', 'name', 'status', 'status_changed']
     list_display = ('status_changed', 'name', 'rule', 'status', 'execution_time')
     ordering = ('-status_changed',)
 

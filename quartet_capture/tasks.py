@@ -29,6 +29,7 @@ from quartet_capture.models import Task as DBTask, Rule as DBRule, \
     TaskHistory, Filter, RuleFilter
 from quartet_capture.rules import Rule
 import time
+from quartet_capture.models import haikunate
 
 StringList = List[str]
 logger = getLogger('quartet_capture')
@@ -109,7 +110,8 @@ def create_and_queue_task(data, rule_name: str,
                           run_immediately: bool = False,
                           initial_status='QUEUED',
                           task_parameters=[],
-                          user_id: int = None):
+                          user_id: int = None,
+                          rule: Rule = None):
     '''
     Will queue an outbound task in the rule engine for processing using
     the rule specified by name in the rule_name parameter.
@@ -128,7 +130,8 @@ def create_and_queue_task(data, rule_name: str,
     '''
     try:
         # get the rule
-        rule = DBRule.objects.get(name=rule_name)
+        if rule == None:
+            rule = DBRule.objects.get(name=rule_name)
         # if the rule exists, store the file using the configured
         # storage class
         file_store = get_storage_class()
@@ -143,7 +146,13 @@ def create_and_queue_task(data, rule_name: str,
             data = io.BytesIO(data)
         task.location = file_store().save(name=filename, content=data)
         task.status = initial_status
-        task.save()
+        try:
+            task.save()
+        except IntegrityError:
+            logger.warning('There was a task name conflict trying to generate '
+                           'a new one...')
+            task.name = haikunate()
+            task.save()
         for task_parameter in task_parameters:
             task_parameter.task = task
             task_parameter.save()
