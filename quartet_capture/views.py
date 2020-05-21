@@ -256,6 +256,7 @@ class CaptureInterface(APIView):
                         'Error in rule %s: %s' % (
                         rule_name, ','.join(err.args))
                     )
+                    raise err
                     exc.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
                     raise exc
 

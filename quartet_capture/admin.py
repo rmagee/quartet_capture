@@ -14,6 +14,8 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 from django.contrib import admin
 from quartet_capture import models
+from django.conf import settings
+from django.utils.safestring import mark_safe
 
 class RuleFilterInline(admin.StackedInline):
     model = models.RuleFilter
@@ -75,8 +77,11 @@ class TaskAdmin(admin.ModelAdmin):
         TaskHistoryInline,
         TaskMessageInline,
     ]
+    def url(self):
+        return mark_safe('<a class="download-task" href="%s%s">Download</a>' % (settings.MEDIA_URL, self.name))
+
     search_fields = ['rule__name', 'name', 'status', 'status_changed']
-    list_display = ('status_changed', 'name', 'rule', 'status', 'execution_time')
+    list_display = ('status_changed', 'name', 'rule', 'status', 'execution_time', url)
     ordering = ('-status_changed',)
 
 def register_to_site(admin_site):
