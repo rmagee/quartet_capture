@@ -18,16 +18,53 @@ The url routes are established in the routers module and appended
 to the urlparams in urls.py.
 '''
 
-from quartet_capture import models
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
 from rest_framework import viewsets
+from django.db.models import Q
 from quartet_capture import serializers
-
+from quartet_capture import models
 
 class RuleViewSet(viewsets.ModelViewSet):
     queryset = models.Rule.objects.prefetch_related(
         'step_set',
     ).all()
     serializer_class = serializers.RuleSerializer
+
+    def list(self, request, *args, **kwargs):
+        """
+        Refactored to support searching steps from the rule
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        try:
+            search = request.GET['search']
+            order_by = request.GET['ordering']
+        except Exception:
+            # just set search to none, this is not a search.
+            search = None
+        if search is not None:
+            queryset = self.queryset.filter(
+                  Q(name__contains=search) |
+                  Q(description__contains=search)).order_by(order_by)
+            if len(queryset) == 0:
+                # Search the steps
+                queryset = models.Rule.objects.prefetch_related('step_set').filter(
+                    Q(step__name__contains=search) |
+                    Q(step__description__contains=search) |
+                    Q(step__step_class__contains=search)).order_by(order_by)
+        else:
+            # this isn't a search so use the class' queryset, as is.
+            queryset = self.queryset
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
 
 
 class RuleParameterViewSet(viewsets.ModelViewSet):
@@ -41,6 +78,11 @@ class StepViewSet(viewsets.ModelViewSet):
     ).all()
     serializer_class = serializers.StepSerializer
 
+    def retrieve(self, request, pk=None):
+        step = get_object_or_404(self.queryset, pk=pk)
+        serializer = serializers.StepSerializer(step)
+        ret_val = Response(serializer.data)
+        return ret_val
 
 class StepParameterViewSet(viewsets.ModelViewSet):
     queryset = models.StepParameter.objects.all()
