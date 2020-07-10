@@ -115,10 +115,12 @@ class TaskMessage(models.Model):
         help_text=_("The message data."),
         null=False
     )
+
     class Meta:
         verbose_name = _('Task Message')
         verbose_name_plural = _('Task Messages')
         ordering = ['created']
+
 
 class Field(models.Model):
     '''
@@ -219,7 +221,8 @@ class Rule(models.Model):
     class Meta:
         verbose_name = _('Rule')
         app_label = 'quartet_capture'
-        ordering=['name']
+        ordering = ['name']
+
 
 class RuleParameter(Field):
     '''
@@ -437,4 +440,4 @@ class RuleFilter(models.Model):
     class Meta:
         ordering = ['order']
         unique_together = ['order', 'filter']
-        verbose_name=_('Rule Filter')
+        verbose_name = _('Rule Filter')

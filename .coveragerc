@@ -12,6 +12,7 @@ omit =
     *permissions.py
     *management*
     ./quartet_capture/apps.py
+    ./quartet_capture/admin.py
 show_missing = True
 exclude_lines =
     raise NotImplementedError
