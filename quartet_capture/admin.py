@@ -78,7 +78,7 @@ class TaskAdmin(admin.ModelAdmin):
         TaskMessageInline,
     ]
     def url(self):
-        return mark_safe('<a class="download-task" href="%s%s">Download</a>' % (settings.MEDIA_URL, self.name))
+        return mark_safe('<a class="download-task" href="%s%s">Download</a>' % ('/capture/task-data/', self.name))
 
     search_fields = ['rule__name', 'name', 'status', 'status_changed']
     list_display = ('status_changed', 'name', 'rule', 'status', 'execution_time', url)
