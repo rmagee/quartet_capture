@@ -7,3 +7,4 @@ djangorestframework-xml
 coreschema
 coreapi
 watchdog
+drf-yasg

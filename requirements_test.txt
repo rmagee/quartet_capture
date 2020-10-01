@@ -18,5 +18,6 @@ python-dateutil
 epcpyyes
 eparsecis
 quartet_epcis
+drf-yasg
 # djangorestframework-xml
 -e git://github.com/rmagee/django-rest-framework-xml.git#egg=djangorestframework-xml
