@@ -12,31 +12,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
+import coreapi
+import coreschema
 import io
-import coreapi, coreschema
-from django.utils.translation import gettext as _
+import logging
+from django.conf import settings
+from django.core.files import storage
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
-from django.core.files import storage
-from django.conf import settings
-from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, JSONParser
+from django.utils.translation import gettext as _
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import exceptions
+from rest_framework import status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import exceptions
 from rest_framework.schemas import ManualSchema
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_xml.parsers import XMLParser
+from rest_framework.views import APIView
 
-from quartet_capture.rules import clone_rule
-from quartet_capture.parsers import RawParser
 from quartet_capture.errors import TaskExecutionError
+from quartet_capture.models import Rule, Task, TaskParameter, Filter
+from quartet_capture.parsers import RawParser
+from quartet_capture.rules import clone_rule
 from quartet_capture.tasks import execute_queued_task, create_and_queue_task, \
     get_rules_by_filter
-from quartet_capture.models import Rule, Task, TaskParameter, Filter
-
-import logging
+from rest_framework_xml.renderers import XMLRenderer
 
 logger = logging.getLogger('quartet_capture')
 
@@ -166,6 +166,10 @@ class CaptureInterface(APIView):
     # sentry queryset for permissions
     queryset = Task.objects.none()
 
+    @swagger_auto_schema(responses=
+                         {201: 'Returns the created task identifier.',
+                          500: 'Internal server error descriptions.'}
+                         )
     def post(self, request: Request, format=None, epcis=False):
         logger.info('Message from %s', getattr(request.META, 'REMOTE_HOST',
                                                'Host Info not Available'))
@@ -254,9 +258,8 @@ class CaptureInterface(APIView):
                 except Exception as err:
                     exc = exceptions.APIException(
                         'Error in rule %s: %s' % (
-                        rule_name, ','.join(err.args))
+                            rule_name, ','.join(err.args))
                     )
-                    raise err
                     exc.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
                     raise exc
 
@@ -379,5 +382,3 @@ class EPCISCapture(CaptureInterface):
 
     def post(self, request: Request, format=None):
         return super().post(request, format, True)
-
-
