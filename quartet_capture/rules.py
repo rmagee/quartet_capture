@@ -290,6 +290,8 @@ class Rule(TaskMessaging):
         :param step: The step that failed.
         '''
         try:
+            self.db_task.STATUS = 'FAILED'
+            self.db_task.save()
             self.error('Performing step failure routine.')
             step.on_failure()
         except Exception:
