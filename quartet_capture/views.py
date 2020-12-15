@@ -263,7 +263,10 @@ class CaptureInterface(APIView):
                     exc.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
                     raise exc
 
-            return Response(ret.name, status=status.HTTP_201_CREATED)
+                return Response(ret.name, status=status.HTTP_201_CREATED)
+            raise exceptions.APIException('No task was created.  This is most '
+                                          'likely due to a filter with no '
+                                          'rules assigned.')
 
     def _inspect_data(self, request: Request):
         """
