@@ -266,7 +266,9 @@ class CaptureInterface(APIView):
                 return Response(ret.name, status=status.HTTP_201_CREATED)
             raise exceptions.APIException('No task was created.  This is most '
                                           'likely due to a filter with no '
-                                          'rules assigned.')
+                                          'rules assigned.',
+                                          status.HTTP_500_INTERNAL_SERVER_ERROR
+                                          )
 
     def _inspect_data(self, request: Request):
         """
