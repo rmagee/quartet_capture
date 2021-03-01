@@ -166,6 +166,7 @@ def create_and_queue_task(data, rule_name: str,
         return task
     except IntegrityError:
         logger.exception('There was an error creating and queuing the task.')
+        raise
     except DBRule.DoesNotExist:
         raise RuleNotFound(
             _('The Rule with name %s could not be found.  Please check '
