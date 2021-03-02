@@ -138,6 +138,7 @@ def create_and_queue_task(data, rule_name: str,
         task = DBTask()
         task.rule = rule
         task.type = task_type
+        task.save()
         # correlate the name of the file with the task
         filename = '{0}.dat'.format(task.name)
         if isinstance(data, str):

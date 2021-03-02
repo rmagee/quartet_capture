@@ -256,9 +256,10 @@ class CaptureInterface(APIView):
                         user_id=user_id
                     )
                 except Exception as err:
+                    args = [str(arg) for arg in err.args]
                     exc = exceptions.APIException(
                         'Error in rule %s: %s' % (
-                            rule_name, ','.join(err.args))
+                            rule_name, args)
                     )
                     exc.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
                     raise exc
@@ -336,7 +337,7 @@ class CaptureInterface(APIView):
         return task.name
 
     def _get_task_parameters(self, request: HttpRequest,
-                             ignore=['run-immediately', 'format', 'rule']):
+                             ignore=None):
         '''
         Converts the GET parameters into Task parameters if supplied.
         Will ignore format, rule and run-immediately parameters.
@@ -344,6 +345,8 @@ class CaptureInterface(APIView):
         :param ignore: The list of get parameters to ignore.
         :return: None
         '''
+        if not ignore:
+            ignore = ['run-immediately', 'format', 'rule']
         params = request.GET.dict()
         ret = []
         for k, v in params.items():
@@ -385,5 +388,5 @@ class EPCISCapture(CaptureInterface):
     '''
     queryset = Task.objects.none()
 
-    def post(self, request: Request, format=None):
+    def post(self, request: Request, format=None, epcis=False):
         return super().post(request, format, True)

@@ -14,30 +14,22 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
-from threading import Lock
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils.translation import gettext_lazy as _
-from model_utils import models as utils
 from model_utils import Choices
-from quartet_capture.haiku import adjectives, nouns, Haikunator
+from model_utils import models as utils
 
-haiku = Haikunator(adjectives=adjectives, nouns=nouns)
+from quartet_capture.haiku import adjectives, nouns, Haikunator
 
 
 def haikunate():
     '''
-    Since the haikunator is a class method
-    it could not be used directly as a default callable for
-    a django field...hence this function.
+    This is an artifact left in place to enable django migrations to
+    succeed.  The haikunate function has been moved to an instance level
+    function of the task model.
     '''
-    lock = Lock()
-    lock.acquire()
-    try:
-        ret = haiku.haikunate(token_length=8, token_hex=True)
-        return ret
-    finally:
-        lock.release()
+    pass
 
 
 SEVERITY_CHOICES = (
@@ -62,7 +54,6 @@ class Task(utils.StatusModel):
         verbose_name=_('Name'),
         unique=True,
         primary_key=True,
-        default=haikunate
     )
     rule = models.ForeignKey(
         'quartet_capture.Rule',
@@ -86,6 +77,20 @@ class Task(utils.StatusModel):
         verbose_name=_('Execution Time'),
     )
 
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = self.haikunate()
+        super().save(*args, **kwargs)
+
+    def haikunate(self):
+        '''
+        Since the haikunator is a class method
+        it could not be used directly as a default callable for
+        a django field...hence this function.
+        '''
+        haiku = Haikunator(adjectives=adjectives, nouns=nouns)
+        return haiku.haikunate(token_length=16, token_hex=True,
+                               delimiter='_').replace('-', '')
 
 class TaskMessage(models.Model):
     '''
