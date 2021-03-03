@@ -19,8 +19,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from model_utils import Choices
 from model_utils import models as utils
-
-from quartet_capture.haiku import adjectives, nouns, Haikunator
+from haikunator import Haikunator
+from quartet_capture.haiku import adjectives, nouns
 
 
 def haikunate():
@@ -90,7 +90,7 @@ class Task(utils.StatusModel):
         '''
         haiku = Haikunator(adjectives=adjectives, nouns=nouns)
         return haiku.haikunate(token_length=16, token_hex=True,
-                               delimiter='_').replace('-', '')
+                               delimiter='-')
 
 class TaskMessage(models.Model):
     '''

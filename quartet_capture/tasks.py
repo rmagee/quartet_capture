@@ -152,7 +152,6 @@ def create_and_queue_task(data, rule_name: str,
         except IntegrityError:
             logger.warning('There was a task name conflict trying to generate '
                            'a new one...')
-            task.name = haikunate()
             task.save()
         for task_parameter in task_parameters:
             task_parameter.task = task
