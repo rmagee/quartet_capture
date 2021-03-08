@@ -248,7 +248,7 @@ class CaptureInterface(APIView):
                 # calling application
                 user_id = self._get_user_id(request)
                 try:
-                    ret = create_and_queue_task(
+                    task = create_and_queue_task(
                         message,
                         rule_name,
                         run_immediately=run,
@@ -263,13 +263,26 @@ class CaptureInterface(APIView):
                     )
                     exc.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
                     raise exc
-
-                return Response(ret.name, status=status.HTTP_201_CREATED)
+                return self._determine_return_status(request, task)
             raise exceptions.APIException('No task was created.  This is most '
                                           'likely due to a filter with no '
                                           'rules assigned.',
                                           status.HTTP_500_INTERNAL_SERVER_ERROR
                                           )
+
+    def _determine_return_status(self, request: Request, task: Task) -> Response:
+        """
+        Some systems will balk at a 201 created and/or having the task name
+        returned.  If a status=ok parameter is in the query string we will
+        return a 200 OK along with an empty body.
+        :param request: The request to inspect.
+        :return: An HTTP response object with a 201 or 200 depending.
+        """
+        if request.query_params.get('status', '').lower() == 'ok':
+            ret = Response(status=status.HTTP_200_OK)
+        else:
+            ret = Response(task.name, status=status.HTTP_201_CREATED)
+        return ret
 
     def _inspect_data(self, request: Request):
         """
@@ -336,7 +349,7 @@ class CaptureInterface(APIView):
         self._get_task_parameters(task, request)
         return task.name
 
-    def _get_task_parameters(self, request: HttpRequest,
+    def _get_task_parameters(self, request: Request,
                              ignore=None):
         '''
         Converts the GET parameters into Task parameters if supplied.
@@ -347,7 +360,7 @@ class CaptureInterface(APIView):
         '''
         if not ignore:
             ignore = ['run-immediately', 'format', 'rule']
-        params = request.GET.dict()
+        params = request.query_params.dict()
         ret = []
         for k, v in params.items():
             if k not in ignore:

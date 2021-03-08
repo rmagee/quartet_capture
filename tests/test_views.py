@@ -164,6 +164,25 @@ class ViewTest(APITestCase):
                                             'selected.')
 
 
+    def test_execute_view_with_filter_1_true_ok_status(self):
+        filter, rf_1, rf_2, rf_3 = self._create_filter()
+        rf_2.search_value = 'no findy'
+        rf_3.default = False
+        rf_3.search_value = 'no findy'
+        rf_2.save()
+        rf_3.save()
+        url = reverse('quartet-capture')
+        data = self._get_test_data()
+        response = self.client.post(
+            '{0}?filter=utf&run-immediately=true&status=ok'.format(url),
+            {'file': data},
+            format='multipart')
+        self.assertEqual(response.status_code, 200)
+        task_name = response.data
+        rules = get_rules_by_filter(filter_name='utf', message=data)
+        self.assertIn('epcis', rules, msg='Rule epcis_1 should have been '
+                                            'selected.')
+
     def test_execute_view_with_filter_2_true(self):
         filter, rf_1, rf_2, rf_3 = self._create_filter()
         rf_1.search_value = 'no findy'
