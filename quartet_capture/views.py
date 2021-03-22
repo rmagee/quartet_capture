@@ -174,7 +174,10 @@ class CaptureInterface(APIView):
         logger.info('Message from %s', getattr(request.META, 'REMOTE_HOST',
                                                'Host Info not Available'))
         # get the message from the request
-        files = request.FILES if len(request.FILES) > 0 else request.POST
+        if not request.content_type == 'application/x-www-form-urlencoded':
+            files = request.FILES if len(request.FILES) > 0 else request.POST
+        else:
+            files = {}
         if len(files) == 0:
             files = self._inspect_data(request)
         elif len(files) > 1:
