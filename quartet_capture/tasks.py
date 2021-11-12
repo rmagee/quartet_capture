@@ -211,8 +211,7 @@ def get_rules_by_filter(filter_name: str, message: str,
                 ret.append(rule_filter.rule.name)
                 if not return_all or rule_filter.break_on_true: break
         elif rule_filter.search_type == 'regex':
-            pattern = re.compile(rule_filter.search_value)
-            match = pattern.match(message, re.MULTILINE) and not rule_filter.reverse
+            match = re.search(rule_filter.search_value, message) and not rule_filter.reverse
             if match:
                 match_found = True
                 ret.append(rule_filter.rule.name)
@@ -238,8 +237,7 @@ def get_rule_by_filter(filter_name: str, message: str) -> str:
                 ret = rule_filter.rule.name
                 break
         if rule_filter.search_type == 'regex':
-            pattern = re.compile(rule_filter.search_value)
-            match = pattern.match(message, re.MULTILINE) and not rule_filter.reverse
+            match = re.search(rule_filter.search_value, message) and not rule_filter.reverse
             if match:
                 ret = rule_filter.rule.name
                 break
