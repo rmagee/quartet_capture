@@ -14,36 +14,35 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
-from django.conf.urls import url
+from django.urls import re_path
 from . import views
 from quartet_capture.routers import urlpatterns as route_patterns
 
-app_name = 'quartet_capture'
+app_name = "quartet_capture"
 
 # the capture URL is versioned at v1
 urlpatterns = [
-    url(r'^quartet-capture/$',
-        views.CaptureInterface.as_view(),
-        name='quartet-capture'),
-    url(r'^epcis-capture/$',
-        views.EPCISCapture.as_view(),
-        name='epcis-capture'),
-    url(r'^execute/$',
+    re_path(
+        r"^quartet-capture/$", views.CaptureInterface.as_view(), name="quartet-capture"
+    ),
+    re_path(r"^epcis-capture/$", views.EPCISCapture.as_view(), name="epcis-capture"),
+    re_path(r"^execute/$", views.ExcuteTaskView.as_view(), name="execute"),
+    re_path(
+        r"^execute/(?P<task_name>[a-zA-Z0-9\-]{1,50})/?$",
         views.ExcuteTaskView.as_view(),
-        name='execute'),
-    url(r'^execute/(?P<task_name>[a-zA-Z0-9\-]{1,50})/?$',
-        views.ExcuteTaskView.as_view(),
-        name='execute-task'),
-    url(r'^task-data/(?P<task_name>[a-zA-Z0-9\-]{1,50})/?$',
+        name="execute-task",
+    ),
+    re_path(
+        r"^task-data/(?P<task_name>[a-zA-Z0-9\-]{1,50})/?$",
         views.GetTaskData.as_view(),
-        name='task-data'),
-    url(r'^clone-rule/$',
+        name="task-data",
+    ),
+    re_path(r"^clone-rule/$", views.CloneRuleView.as_view(), name="clone"),
+    re_path(
+        r"^clone-rule/(?P<rule_name>[0-9a-zA-Z\W\s]*)/(?P<new_rule_name>[0-9a-zA-Z\W\s]*)/$",
         views.CloneRuleView.as_view(),
-        name='clone'),
-    url(
-        r'^clone-rule/(?P<rule_name>[0-9a-zA-Z\W\s]*)/(?P<new_rule_name>[0-9a-zA-Z\W\s]*)/$',
-        views.CloneRuleView.as_view(),
-        name='clone-rule')
+        name="clone-rule",
+    ),
 ]
 
 urlpatterns += route_patterns
